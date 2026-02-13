@@ -1,0 +1,551 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  login    String
+  email    String @unique
+  password String
+  balance  Int    @default(0)
+
+  enabledTwoFactor Boolean  @default(false) @map("enabled_two_factor")
+  avatarUrl        String?  @map("avatar_url")
+  role             Roles    @default(USER)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  verifications          Verification[]
+  courses                Course[]
+  banInfo                BanInfo?
+  organizations          Organization[]
+  reviews                Review[]
+  payments               Payment[]
+  appeals                Appeal[]
+  adminLogs              AdminLog[]              @relation("AdminActions")
+  userCourseProgresses   UserCourseProgress[]
+  twoFactorCodes         TwoFactorCode[]
+  experience             UserExperience?
+  members                Member[]
+  completedItems         CompletedItem[]
+  heatmapDatas           HeatmapData[]
+  experienceTransactions ExperienceTransaction[]
+}
+
+model TwoFactorCode {
+  id        Int       @id @default(autoincrement())
+  code      String
+  isUsed    Boolean   @default(false) @map("is_used")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, expiresAt])
+  @@map("two_factor_codes")
+}
+
+model Verification {
+  id           Int                @id @default(autoincrement())
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int                @unique @map("user_id")
+  status       VerificationStatus @default(UNVERIFIED)
+  type         VerificationType   @default(USER)
+  requestedAt  DateTime?          @map("requested_at")
+  verifiedAt   DateTime?          @map("verified_at")
+  consideredBy Int?               @map("considered_by")
+  rejectReason String?            @map("reject_reason")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model BanInfo {
+  id Int @id @default(autoincrement())
+
+  isActive       Boolean       @default(false)
+  reason         String
+  detailedReason String?
+  bannedAt       DateTime      @default(now())
+  bannedUntil    DateTime?
+  unbannedAt     DateTime?
+  bannedBy       Int
+  violationType  ViolationType @default(OTHER)
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int  @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Appeal {
+  id           Int          @id @default(autoincrement())
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  targetId     Int
+  reason       String
+  status       AppealStatus @default(PENDING)
+  consideredBy Int?
+  resolution   String?
+  resolvedAt   DateTime?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("appeals")
+}
+
+model AdminLog {
+  id         Int         @id @default(autoincrement())
+  admin      User        @relation("AdminActions", fields: [adminId], references: [id])
+  adminId    Int
+  action     AdminAction
+  entityType String
+  entityId   Int
+  reason     String?
+  details    Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([adminId])
+  @@index([entityType, entityId])
+  @@map("admin_logs")
+}
+
+model Organization {
+  id          Int              @id @default(autoincrement())
+  name        String
+  description String?
+  logo        String?
+  owner       User             @relation(fields: [ownerId], references: [id])
+  ownerId     Int
+  inviteCode  String           @unique
+  type        OrganizationType @default(PRIVATE)
+  isVerified  Boolean          @default(false)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members Member[]
+  teams   Team[]
+  courses Course[]
+}
+
+model Team {
+  id             Int          @id @default(autoincrement())
+  name           String
+  description    String?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId Int
+  leadId         Int? // userId руководителя
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members Member[]
+}
+
+model Member {
+  id             Int          @id @default(autoincrement())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId Int
+  team           Team?        @relation(fields: [teamId], references: [id])
+  teamId         Int?
+  role           MemberRole   @default(MEMBER) // OWNER, ADMIN, MEMBER, GUEST
+  position       String? // должность
+  joinedAt       DateTime     @default(now())
+
+  @@unique([userId, organizationId])
+  @@map("members")
+}
+
+model Course {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  isPublished Boolean     @default(false) @map("is_published")
+  publishedAt DateTime?
+  previewUrl  String?     @map("preview_url")
+  type        CourseType
+  price       Int?
+  level       CourseLevel @default(BEGINNER)
+
+  user           User?         @relation(fields: [userId], references: [id])
+  userId         Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId Int?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  modules              Module[]
+  reviews              Review[]
+  payments             Payment[]
+  canvasBoard          CanvasBoard?
+  analytics            CourseAnalytics?
+  userCourseProgresses UserCourseProgress[]
+  completedItems       CompletedItem[]
+  taxonomyCourses      TaxonomyCourse[]
+}
+
+model Module {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  order       Int     @default(0)
+  course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    Int
+
+  lessons Lesson[]
+
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  userCourseProgresses UserCourseProgress[]
+  completedItems       CompletedItem[]
+
+  @@unique([courseId, order])
+}
+
+model Lesson {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  order       Int     @default(0)
+  module      Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId    Int
+
+  content LessonContent?
+
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  userCourseProgresses UserCourseProgress[]
+  completedItems       CompletedItem[]
+
+  @@unique([moduleId, order])
+}
+
+model LessonContent {
+  id       Int    @id @default(autoincrement())
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId Int    @unique
+
+  type    LessonType @default(TEXT)
+  content Json
+
+  duration Int?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model CanvasBoard {
+  id       Int    @id @default(autoincrement())
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId Int    @unique
+
+  nodes Json
+  edges Json?
+  zoom  Float @default(1)
+
+  version Int @default(1)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("canvas_boards")
+}
+
+model Taxonomy {
+  id              Int              @id @default(autoincrement())
+  type            TaxonomyType
+  name            String
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  taxonomyCourses TaxonomyCourse[]
+}
+
+model TaxonomyCourse {
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId   Int
+  taxonomy   Taxonomy @relation(fields: [taxonomyId], references: [id], onDelete: Cascade)
+  taxonomyId Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([courseId, taxonomyId])
+  @@map("taxonomy_courses")
+}
+
+model UserCourseProgress {
+  id       Int    @id @default(autoincrement())
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId Int
+
+  currentModule   Module? @relation(fields: [currentModuleId], references: [id])
+  currentModuleId Int?
+  currentLesson   Lesson? @relation(fields: [currentLessonId], references: [id])
+  currentLessonId Int?
+
+  progressPercent Float @default(0)
+
+  startedAt      DateTime  @default(now())
+  lastActivityAt DateTime  @default(now())
+  completedAt    DateTime?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, courseId])
+  @@index([userId, updatedAt])
+  @@map("user_course_progresses")
+}
+
+model CompletedItem {
+  id       Int     @id @default(autoincrement())
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  course   Course  @relation(fields: [courseId], references: [id])
+  courseId Int
+  module   Module? @relation(fields: [moduleId], references: [id])
+  moduleId Int?
+  lesson   Lesson? @relation(fields: [lessonId], references: [id])
+  lessonId Int?
+
+  itemType    ItemType
+  completedAt DateTime @default(now())
+
+  @@index([userId, courseId])
+  @@index([userId, completedAt])
+  @@map("completed_items")
+}
+
+model HeatmapData {
+  id     Int      @id @default(autoincrement())
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  date   DateTime @map("date")
+  count  Int      @default(0)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("heatmap_data")
+}
+
+model UserExperience {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int  @unique
+
+  currentExp   Int @default(0)
+  totalExp     Int @default(0)
+  currentLevel Int @default(1)
+
+  updatedAt DateTime @updatedAt
+
+  @@map("user_experiences")
+}
+
+model ExperienceTransaction {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+
+  amount     Int
+  type       ExpType
+  sourceId   Int?
+  sourceType String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("experience_transactions")
+}
+
+model Review {
+  id       Int    @id @default(autoincrement())
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId Int
+
+  rating Int     @default(5) // 1-5
+  pros   String?
+  cons   String?
+  text   String
+
+  isModerated       Boolean @default(false)
+  moderationComment String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, courseId])
+  @@map("reviews")
+}
+
+model Payment {
+  id       Int    @id @default(autoincrement())
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId Int
+
+  amount   Int
+  currency String        @default("RUB")
+  status   PaymentStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, createdAt])
+  @@index([courseId])
+  @@map("payments")
+}
+
+model CourseAnalytics {
+  id       Int    @id @default(autoincrement())
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId Int    @unique
+
+  views       Int @default(0)
+  starts      Int @default(0)
+  completions Int @default(0)
+
+  averageRating Float? @default(0)
+  totalReviews  Int    @default(0)
+
+  totalRevenue Int @default(0)
+  salesCount   Int @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  @@map("course_analytics")
+}
+
+enum Roles {
+  ADMIN
+  USER
+  MODERATOR
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum VerificationType {
+  USER
+  COURSE
+  ORGANIZATION
+}
+
+enum ViolationType {
+  SPAM
+  FRAUD
+  ABUSE
+  COPYRIGHT
+  ILLEGAL
+  OTHER
+}
+
+enum AdminAction {
+  BAN
+  UNBAN
+  VERIFY
+  DENY
+}
+
+enum AppealStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrganizationType {
+  PUBLIC
+  PRIVATE
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+enum CourseType {
+  PUBLIC
+  PAID
+  CORPORATE
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum LessonType {
+  TEXT
+  VIDEO
+  QUIZ
+  ASSIGNMENT
+  CODE
+  PRESENTATION
+}
+
+enum ItemType {
+  MODULE
+  LESSON
+  QUIZ
+  ASSIGNMENT
+}
+
+enum ExpType {
+  LESSON_COMPLETED
+  MODULE_COMPLETED
+  COURSE_COMPLETED
+  STREAK_DAY
+  ACHIEVEMENT
+  REVIEW_WRITTEN
+  COURSE_CREATED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  TRIAL
+}
+
+enum TaxonomyType {
+  TAG
+  CATEGORY
+}
