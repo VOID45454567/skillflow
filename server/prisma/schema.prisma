@@ -1,294 +1,362 @@
 generator client {
-  provider = "prisma-client"
-  output   = "./generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
+// ==================== ENUMS ====================
+
+enum Role {
+  ADMIN
+  MODERATOR
+  USER
+}
+
+enum VerificationStatus {
+  UNVERIFIED // Не верифицирован
+  PENDING // Ожидает проверки
+  VERIFIED // Верифицирован
+  REJECTED // Отклонен
+}
+
+enum OrganizationRole {
+  OWNER // Владелец
+  ADMIN // Администратор
+  MEMBER // Участник
+}
+
+enum CourseStatus {
+  DRAFT // Черновик
+  PENDING // На модерации
+  PUBLISHED // Опубликован
+  REJECTED // Отклонен
+  ARCHIVED // В архиве
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum CourseType {
+  FREE
+  PAID
+  ORGANIZATION
+}
+
+enum ItemType {
+  MODULE
+  LESSON
+}
+
+enum UserAction {
+  BANNED
+  VERIFIED // ← ИСПРАВЛЕНО
+  COMPLETE_LESSON // ← ИСПРАВЛЕНО
+  COMPLETE_MODULE
+  COMPLETE_COURSE
+}
+
+enum TransactionType {
+  DEPOSIT // Пополнение баланса
+  COURSE_PURCHASE // Покупка курса
+  ORGANIZATION_FEE // Плата за организацию
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum AppealStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ==================== MAIN MODELS ====================
+
 model User {
-  id       Int    @id @default(autoincrement())
-  login    String
-  email    String @unique
-  password String
-  balance  Int    @default(0)
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  login     String  @unique
+  password  String
+  avatarUrl String?
+  balance   Int     @default(0) // Виртуальная валюта (в копейках/центах)
+  role      Role    @default(USER)
 
-  enabledTwoFactor Boolean  @default(false) @map("enabled_two_factor")
-  avatarUrl        String?  @map("avatar_url")
-  role             Roles    @default(USER)
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  twoFactorSecret  String? // Секрет для 2FA
+  twoFactorEnabled Boolean @default(false)
 
-  verifications          Verification[]
-  courses                Course[]
-  banInfo                BanInfo?
-  organizations          Organization[]
-  reviews                Review[]
-  payments               Payment[]
-  appeals                Appeal[]
-  adminLogs              AdminLog[]              @relation("AdminActions")
-  userCourseProgresses   UserCourseProgress[]
-  twoFactorCodes         TwoFactorCode[]
-  experience             UserExperience?
-  members                Member[]
-  completedItems         CompletedItem[]
-  heatmapDatas           HeatmapData[]
-  experienceTransactions ExperienceTransaction[]
-}
-
-model TwoFactorCode {
-  id        Int       @id @default(autoincrement())
-  code      String
-  isUsed    Boolean   @default(false) @map("is_used")
-  expiresAt DateTime  @map("expires_at")
-  usedAt    DateTime? @map("used_at")
-
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([userId, expiresAt])
-  @@map("two_factor_codes")
-}
-
-model Verification {
-  id           Int                @id @default(autoincrement())
-  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       Int                @unique @map("user_id")
-  status       VerificationStatus @default(UNVERIFIED)
-  type         VerificationType   @default(USER)
-  requestedAt  DateTime?          @map("requested_at")
-  verifiedAt   DateTime?          @map("verified_at")
-  consideredBy Int?               @map("considered_by")
-  rejectReason String?            @map("reject_reason")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-}
-
-model BanInfo {
-  id Int @id @default(autoincrement())
-
-  isActive       Boolean       @default(false)
-  reason         String
-  detailedReason String?
-  bannedAt       DateTime      @default(now())
-  bannedUntil    DateTime?
-  unbannedAt     DateTime?
-  bannedBy       Int
-  violationType  ViolationType @default(OTHER)
-
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int  @unique
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  verifiedAt         DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  ownedOrganizations   Organization[]        @relation("Owner")
+  organizationMembers  Member[]
+  createdCourses       Course[]              @relation("Author")
+  transactions         Transaction[]
+  payments             Payment[]
+  banInfo              BanInfo?
+  appeals              Appeal[]
+  courseProgress       UserCourseProgress[]
+  completedItems       CompletedItem[]
+  twoFactorBackupCodes TwoFactorBackupCode[]
+  heatmapDatas         HeatmapData[]
+  userActions          UserActions[]
+  courses              Course[]
+  refreshTokens        RefreshToken?
+
+  @@map("users")
+}
+
+model TwoFactorBackupCode {
+  id        Int      @id @default(autoincrement())
+  code      String
+  isUsed    Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, code])
+  @@map("two_factor_backup_codes")
+}
+
+// ==================== БАНЫ ====================
+
+model BanInfo {
+  id             Int       @id @default(autoincrement())
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int       @unique
+  reason         String
+  detailedReason String?
+  bannedAt       DateTime  @default(now())
+  bannedUntil    DateTime?
+  bannedBy       Int // ID админа
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  appeals   Appeal[]
+
+  @@map("ban_info")
 }
 
 model Appeal {
   id           Int          @id @default(autoincrement())
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
-  targetId     Int
-  reason       String
+  banInfo      BanInfo      @relation(fields: [banInfoId], references: [id])
+  banInfoId    Int
+  reason       String // Причина апелляции
   status       AppealStatus @default(PENDING)
-  consideredBy Int?
-  resolution   String?
+  resolution   String? // Решение/комментарий модератора
+  consideredBy Int? // ID модератора
   resolvedAt   DateTime?
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([status])
   @@map("appeals")
 }
 
-model AdminLog {
-  id         Int         @id @default(autoincrement())
-  admin      User        @relation("AdminActions", fields: [adminId], references: [id])
-  adminId    Int
-  action     AdminAction
-  entityType String
-  entityId   Int
-  reason     String?
-  details    Json?
+// ==================== ТРАНЗАКЦИИ И ПЛАТЕЖИ ====================
 
-  createdAt DateTime @default(now()) @map("created_at")
+model Transaction {
+  id           Int             @id @default(autoincrement())
+  user         User            @relation(fields: [userId], references: [id])
+  userId       Int
+  type         TransactionType
+  amount       Int // Положительное/отрицательное число
+  balanceAfter Int // Баланс после транзакции
+  description  String?
 
-  @@index([adminId])
-  @@index([entityType, entityId])
-  @@map("admin_logs")
+  // Комиссия
+  fee        Int?   @default(0)
+  feePercent Float?
+
+  // Связи
+  payment   Payment?
+  paymentId Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([type])
+  @@map("transactions")
 }
 
+model Payment {
+  id     Int           @id @default(autoincrement())
+  user   User          @relation(fields: [userId], references: [id])
+  userId Int
+  amount Int // Сумма платежа
+  fee    Int?          @default(0) // Комиссия
+  status PaymentStatus @default(PENDING)
+
+  // Для покупки курсов
+  course   Course? @relation(fields: [courseId], references: [id])
+  courseId Int?
+
+  // Для пополнения баланса
+  paymentMethod String? // Способ пополнения (card, crypto, etc)
+  externalId    String? // ID во внешней платежной системе
+
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId Int?         @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([courseId])
+  @@map("payments")
+}
+
+// ==================== ОРГАНИЗАЦИИ ====================
+
 model Organization {
-  id          Int              @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   name        String
   description String?
   logo        String?
-  owner       User             @relation(fields: [ownerId], references: [id])
-  ownerId     Int
-  inviteCode  String           @unique
-  type        OrganizationType @default(PRIVATE)
-  isVerified  Boolean          @default(false)
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  // Владелец
+  owner   User @relation("Owner", fields: [ownerId], references: [id])
+  ownerId Int
 
+  // Настройки
+  inviteCode String @unique // Уникальный код для приглашений
+
+  // Платные функции
+  paidUntil     DateTime? // До когда оплачена организация
+  pricePerMonth Int       @default(1000) // Цена в виртуальной валюте
+
+  // Модерация
+  isVerified Boolean   @default(false)
+  verifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи
   members Member[]
-  teams   Team[]
   courses Course[]
-}
 
-model Team {
-  id             Int          @id @default(autoincrement())
-  name           String
-  description    String?
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId Int
-  leadId         Int? // userId руководителя
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  members Member[]
+  @@map("organizations")
 }
 
 model Member {
-  id             Int          @id @default(autoincrement())
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             Int              @id @default(autoincrement())
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         Int
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId Int
-  team           Team?        @relation(fields: [teamId], references: [id])
-  teamId         Int?
-  role           MemberRole   @default(MEMBER) // OWNER, ADMIN, MEMBER, GUEST
-  position       String? // должность
-  joinedAt       DateTime     @default(now())
+  role           OrganizationRole @default(MEMBER)
+
+  // Должность/роль в организации (не системная)
+  position String?
+
+  joinedAt DateTime @default(now())
 
   @@unique([userId, organizationId])
   @@map("members")
 }
 
-model Course {
-  id          Int         @id @default(autoincrement())
-  name        String
-  description String?
-  isPublished Boolean     @default(false) @map("is_published")
-  publishedAt DateTime?
-  previewUrl  String?     @map("preview_url")
-  type        CourseType
-  price       Int?
-  level       CourseLevel @default(BEGINNER)
+// ==================== КУРСЫ ====================
 
-  user           User?         @relation(fields: [userId], references: [id])
-  userId         Int?
+model Course {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  previewUrl  String?
+
+  status CourseStatus @default(DRAFT)
+  level  CourseLevel  @default(BEGINNER)
+  type   CourseType   @default(FREE)
+  price  Int?
+
+  author   User @relation("Author", fields: [authorId], references: [id])
+  authorId Int
+
+  // Организация
   organization   Organization? @relation(fields: [organizationId], references: [id])
   organizationId Int?
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  // Модерация
+  moderatedBy  Int?
+  moderatedAt  DateTime?
+  rejectReason String?
 
-  modules              Module[]
-  reviews              Review[]
-  payments             Payment[]
-  canvasBoard          CanvasBoard?
-  analytics            CourseAnalytics?
-  userCourseProgresses UserCourseProgress[]
-  completedItems       CompletedItem[]
-  taxonomyCourses      TaxonomyCourse[]
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  modules        Module[]
+  purchases      Payment[]
+  progress       UserCourseProgress[]
+  completedItems CompletedItem[]
+  user           User?                @relation(fields: [userId], references: [id])
+  userId         Int?
+
+  @@index([status])
+  @@index([authorId]) // ← ДОБАВЛЕНО
+  @@index([organizationId])
+  @@map("courses")
 }
 
 model Module {
   id          Int     @id @default(autoincrement())
-  name        String
+  title       String
   description String?
   order       Int     @default(0)
-  course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId    Int
+
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId Int
 
   lessons Lesson[]
 
-  createdAt            DateTime             @default(now()) @map("created_at")
-  updatedAt            DateTime             @updatedAt @map("updated_at")
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
   userCourseProgresses UserCourseProgress[]
   completedItems       CompletedItem[]
 
   @@unique([courseId, order])
+  @@map("modules")
 }
 
 model Lesson {
   id          Int     @id @default(autoincrement())
-  name        String
+  title       String
   description String?
   order       Int     @default(0)
-  module      Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  moduleId    Int
 
-  content LessonContent?
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId Int
 
-  createdAt            DateTime             @default(now()) @map("created_at")
-  updatedAt            DateTime             @updatedAt @map("updated_at")
+  // Контент (хранится как JSON)
+  content   Json // { type: "text", content: "...", resources: [...] }
+  resources Json? // Массив URL ресурсов
+
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
   userCourseProgresses UserCourseProgress[]
   completedItems       CompletedItem[]
 
   @@unique([moduleId, order])
+  @@map("lessons")
 }
 
-model LessonContent {
-  id       Int    @id @default(autoincrement())
-  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  lessonId Int    @unique
-
-  type    LessonType @default(TEXT)
-  content Json
-
-  duration Int?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-}
-
-model CanvasBoard {
-  id       Int    @id @default(autoincrement())
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId Int    @unique
-
-  nodes Json
-  edges Json?
-  zoom  Float @default(1)
-
-  version Int @default(1)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("canvas_boards")
-}
-
-model Taxonomy {
-  id              Int              @id @default(autoincrement())
-  type            TaxonomyType
-  name            String
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
-  taxonomyCourses TaxonomyCourse[]
-}
-
-model TaxonomyCourse {
-  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId   Int
-  taxonomy   Taxonomy @relation(fields: [taxonomyId], references: [id], onDelete: Cascade)
-  taxonomyId Int
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@id([courseId, taxonomyId])
-  @@map("taxonomy_courses")
-}
+// ==================== ПРОГРЕСС ОБУЧЕНИЯ ====================
 
 model UserCourseProgress {
   id       Int    @id @default(autoincrement())
@@ -302,26 +370,23 @@ model UserCourseProgress {
   currentLesson   Lesson? @relation(fields: [currentLessonId], references: [id])
   currentLessonId Int?
 
-  progressPercent Float @default(0)
-
-  startedAt      DateTime  @default(now())
-  lastActivityAt DateTime  @default(now())
-  completedAt    DateTime?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  progressPercent Float     @default(0)
+  startedAt       DateTime  @default(now())
+  lastActivityAt  DateTime  @default(now())
+  completedAt     DateTime?
 
   @@unique([userId, courseId])
-  @@index([userId, updatedAt])
-  @@map("user_course_progresses")
+  @@map("user_course_progress")
 }
 
 model CompletedItem {
-  id       Int     @id @default(autoincrement())
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       Int    @id @default(autoincrement())
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   Int
-  course   Course  @relation(fields: [courseId], references: [id])
+  course   Course @relation(fields: [courseId], references: [id])
   courseId Int
+
+  // Выполненный элемент (может быть модуль или урок)
   module   Module? @relation(fields: [moduleId], references: [id])
   moduleId Int?
   lesson   Lesson? @relation(fields: [lessonId], references: [id])
@@ -330,222 +395,69 @@ model CompletedItem {
   itemType    ItemType
   completedAt DateTime @default(now())
 
+  // Убеждаемся, что заполнено хотя бы одно из moduleId/lessonId
   @@index([userId, courseId])
-  @@index([userId, completedAt])
   @@map("completed_items")
 }
 
+// ==================== СТАТИСТИКА ====================
+
+model Stats {
+  id   Int      @id @default(autoincrement())
+  date DateTime @unique
+
+  newUsers   Int @default(0)
+  totalUsers Int @default(0)
+
+  // Финансы
+  totalDeposits  Int @default(0) // Сумма пополнений
+  totalFees      Int @default(0) // Сумма комиссий
+  totalPurchases Int @default(0) // Количество покупок
+
+  // Курсы
+  publishedCourses Int @default(0)
+  completedCourses Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("daily_stats")
+}
+
+// Индекс для производительности
 model HeatmapData {
   id     Int      @id @default(autoincrement())
   user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
   date   DateTime @map("date")
-  count  Int      @default(0)
+  count  Int      @default(0) // Количество действий в день
 
   @@unique([userId, date])
   @@index([userId, date])
   @@map("heatmap_data")
 }
 
-model UserExperience {
-  id     Int  @id @default(autoincrement())
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int  @unique
+model UserActions {
+  id        Int        @id @default(autoincrement())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade) // ← ИСПРАВЛЕНО
+  userId    Int
+  date      DateTime   @default(now())
+  type      UserAction
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
-  currentExp   Int @default(0)
-  totalExp     Int @default(0)
-  currentLevel Int @default(1)
-
-  updatedAt DateTime @updatedAt
-
-  @@map("user_experiences")
+  @@index([userId, date])
+  @@index([type])
+  @@map("user_actions")
 }
 
-model ExperienceTransaction {
-  id     Int  @id @default(autoincrement())
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
-
-  amount     Int
-  type       ExpType
-  sourceId   Int?
-  sourceType String?
-
-  createdAt DateTime @default(now())
-
-  @@index([userId, createdAt])
-  @@map("experience_transactions")
-}
-
-model Review {
-  id       Int    @id @default(autoincrement())
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   Int
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId Int
-
-  rating Int     @default(5) // 1-5
-  pros   String?
-  cons   String?
-  text   String
-
-  isModerated       Boolean @default(false)
-  moderationComment String?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@unique([userId, courseId])
-  @@map("reviews")
-}
-
-model Payment {
-  id       Int    @id @default(autoincrement())
-  user     User   @relation(fields: [userId], references: [id])
-  userId   Int
-  course   Course @relation(fields: [courseId], references: [id])
-  courseId Int
-
-  amount   Int
-  currency String        @default("RUB")
-  status   PaymentStatus @default(PENDING)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([userId, createdAt])
-  @@index([courseId])
-  @@map("payments")
-}
-
-model CourseAnalytics {
-  id       Int    @id @default(autoincrement())
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId Int    @unique
-
-  views       Int @default(0)
-  starts      Int @default(0)
-  completions Int @default(0)
-
-  averageRating Float? @default(0)
-  totalReviews  Int    @default(0)
-
-  totalRevenue Int @default(0)
-  salesCount   Int @default(0)
-
-  updatedAt DateTime @updatedAt
-
-  @@map("course_analytics")
-}
-
-enum Roles {
-  ADMIN
-  USER
-  MODERATOR
-}
-
-enum VerificationStatus {
-  UNVERIFIED
-  PENDING
-  VERIFIED
-  REJECTED
-}
-
-enum VerificationType {
-  USER
-  COURSE
-  ORGANIZATION
-}
-
-enum ViolationType {
-  SPAM
-  FRAUD
-  ABUSE
-  COPYRIGHT
-  ILLEGAL
-  OTHER
-}
-
-enum AdminAction {
-  BAN
-  UNBAN
-  VERIFY
-  DENY
-}
-
-enum AppealStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum OrganizationType {
-  PUBLIC
-  PRIVATE
-}
-
-enum MemberRole {
-  OWNER
-  ADMIN
-  MEMBER
-  GUEST
-}
-
-enum CourseType {
-  PUBLIC
-  PAID
-  CORPORATE
-}
-
-enum CourseLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-  EXPERT
-}
-
-enum LessonType {
-  TEXT
-  VIDEO
-  QUIZ
-  ASSIGNMENT
-  CODE
-  PRESENTATION
-}
-
-enum ItemType {
-  MODULE
-  LESSON
-  QUIZ
-  ASSIGNMENT
-}
-
-enum ExpType {
-  LESSON_COMPLETED
-  MODULE_COMPLETED
-  COURSE_COMPLETED
-  STREAK_DAY
-  ACHIEVEMENT
-  REVIEW_WRITTEN
-  COURSE_CREATED
-}
-
-enum PaymentStatus {
-  PENDING
-  SUCCESS
-  FAILED
-  REFUNDED
-  CANCELLED
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  EXPIRED
-  CANCELLED
-  TRIAL
-}
-
-enum TaxonomyType {
-  TAG
-  CATEGORY
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  tokenValue String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int      @unique
+  expiriesAt DateTime
+  isRevoked  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
