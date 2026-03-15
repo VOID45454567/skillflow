@@ -298,6 +298,8 @@ export type UserWhereInput = {
   userActions?: Prisma.UserActionsListRelationFilter
   courses?: Prisma.CourseListRelationFilter
   refreshTokens?: Prisma.XOR<Prisma.RefreshTokenNullableScalarRelationFilter, Prisma.RefreshTokenWhereInput> | null
+  purchasedCourses?: Prisma.PurchasedCoursesListRelationFilter
+  reviews?: Prisma.ReviewListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -328,6 +330,8 @@ export type UserOrderByWithRelationInput = {
   userActions?: Prisma.UserActionsOrderByRelationAggregateInput
   courses?: Prisma.CourseOrderByRelationAggregateInput
   refreshTokens?: Prisma.RefreshTokenOrderByWithRelationInput
+  purchasedCourses?: Prisma.PurchasedCoursesOrderByRelationAggregateInput
+  reviews?: Prisma.ReviewOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -361,6 +365,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   userActions?: Prisma.UserActionsListRelationFilter
   courses?: Prisma.CourseListRelationFilter
   refreshTokens?: Prisma.XOR<Prisma.RefreshTokenNullableScalarRelationFilter, Prisma.RefreshTokenWhereInput> | null
+  purchasedCourses?: Prisma.PurchasedCoursesListRelationFilter
+  reviews?: Prisma.ReviewListRelationFilter
 }, "id" | "email" | "login">
 
 export type UserOrderByWithAggregationInput = {
@@ -430,6 +436,8 @@ export type UserCreateInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -460,6 +468,8 @@ export type UserUncheckedCreateInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -489,6 +499,8 @@ export type UserUpdateInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -519,6 +531,8 @@ export type UserUncheckedUpdateInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -870,6 +884,34 @@ export type UserUpdateOneRequiredWithoutRefreshTokensNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRefreshTokensInput, Prisma.UserUpdateWithoutRefreshTokensInput>, Prisma.UserUncheckedUpdateWithoutRefreshTokensInput>
 }
 
+export type UserCreateNestedOneWithoutPurchasedCoursesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPurchasedCoursesInput, Prisma.UserUncheckedCreateWithoutPurchasedCoursesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPurchasedCoursesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPurchasedCoursesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPurchasedCoursesInput, Prisma.UserUncheckedCreateWithoutPurchasedCoursesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPurchasedCoursesInput
+  upsert?: Prisma.UserUpsertWithoutPurchasedCoursesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPurchasedCoursesInput, Prisma.UserUpdateWithoutPurchasedCoursesInput>, Prisma.UserUncheckedUpdateWithoutPurchasedCoursesInput>
+}
+
+export type UserCreateNestedOneWithoutReviewsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReviewsInput, Prisma.UserUncheckedCreateWithoutReviewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReviewsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutReviewsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReviewsInput, Prisma.UserUncheckedCreateWithoutReviewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReviewsInput
+  upsert?: Prisma.UserUpsertWithoutReviewsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReviewsInput, Prisma.UserUpdateWithoutReviewsInput>, Prisma.UserUncheckedUpdateWithoutReviewsInput>
+}
+
 export type UserCreateWithoutTwoFactorBackupCodesInput = {
   email: string
   login: string
@@ -896,6 +938,8 @@ export type UserCreateWithoutTwoFactorBackupCodesInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTwoFactorBackupCodesInput = {
@@ -925,6 +969,8 @@ export type UserUncheckedCreateWithoutTwoFactorBackupCodesInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTwoFactorBackupCodesInput = {
@@ -969,6 +1015,8 @@ export type UserUpdateWithoutTwoFactorBackupCodesInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTwoFactorBackupCodesInput = {
@@ -998,6 +1046,8 @@ export type UserUncheckedUpdateWithoutTwoFactorBackupCodesInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutBanInfoInput = {
@@ -1026,6 +1076,8 @@ export type UserCreateWithoutBanInfoInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutBanInfoInput = {
@@ -1055,6 +1107,8 @@ export type UserUncheckedCreateWithoutBanInfoInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutBanInfoInput = {
@@ -1099,6 +1153,8 @@ export type UserUpdateWithoutBanInfoInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBanInfoInput = {
@@ -1128,6 +1184,8 @@ export type UserUncheckedUpdateWithoutBanInfoInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAppealsInput = {
@@ -1156,6 +1214,8 @@ export type UserCreateWithoutAppealsInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAppealsInput = {
@@ -1185,6 +1245,8 @@ export type UserUncheckedCreateWithoutAppealsInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAppealsInput = {
@@ -1229,6 +1291,8 @@ export type UserUpdateWithoutAppealsInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAppealsInput = {
@@ -1258,6 +1322,8 @@ export type UserUncheckedUpdateWithoutAppealsInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTransactionsInput = {
@@ -1286,6 +1352,8 @@ export type UserCreateWithoutTransactionsInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTransactionsInput = {
@@ -1315,6 +1383,8 @@ export type UserUncheckedCreateWithoutTransactionsInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -1359,6 +1429,8 @@ export type UserUpdateWithoutTransactionsInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTransactionsInput = {
@@ -1388,6 +1460,8 @@ export type UserUncheckedUpdateWithoutTransactionsInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPaymentsInput = {
@@ -1416,6 +1490,8 @@ export type UserCreateWithoutPaymentsInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPaymentsInput = {
@@ -1445,6 +1521,8 @@ export type UserUncheckedCreateWithoutPaymentsInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPaymentsInput = {
@@ -1489,6 +1567,8 @@ export type UserUpdateWithoutPaymentsInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPaymentsInput = {
@@ -1518,6 +1598,8 @@ export type UserUncheckedUpdateWithoutPaymentsInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOwnedOrganizationsInput = {
@@ -1546,6 +1628,8 @@ export type UserCreateWithoutOwnedOrganizationsInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOwnedOrganizationsInput = {
@@ -1575,6 +1659,8 @@ export type UserUncheckedCreateWithoutOwnedOrganizationsInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOwnedOrganizationsInput = {
@@ -1619,6 +1705,8 @@ export type UserUpdateWithoutOwnedOrganizationsInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnedOrganizationsInput = {
@@ -1648,6 +1736,8 @@ export type UserUncheckedUpdateWithoutOwnedOrganizationsInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOrganizationMembersInput = {
@@ -1676,6 +1766,8 @@ export type UserCreateWithoutOrganizationMembersInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOrganizationMembersInput = {
@@ -1705,6 +1797,8 @@ export type UserUncheckedCreateWithoutOrganizationMembersInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOrganizationMembersInput = {
@@ -1749,6 +1843,8 @@ export type UserUpdateWithoutOrganizationMembersInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrganizationMembersInput = {
@@ -1778,6 +1874,8 @@ export type UserUncheckedUpdateWithoutOrganizationMembersInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCreatedCoursesInput = {
@@ -1806,6 +1904,8 @@ export type UserCreateWithoutCreatedCoursesInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCreatedCoursesInput = {
@@ -1835,6 +1935,8 @@ export type UserUncheckedCreateWithoutCreatedCoursesInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCreatedCoursesInput = {
@@ -1868,6 +1970,8 @@ export type UserCreateWithoutCoursesInput = {
   heatmapDatas?: Prisma.HeatmapDataCreateNestedManyWithoutUserInput
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCoursesInput = {
@@ -1897,6 +2001,8 @@ export type UserUncheckedCreateWithoutCoursesInput = {
   heatmapDatas?: Prisma.HeatmapDataUncheckedCreateNestedManyWithoutUserInput
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCoursesInput = {
@@ -1941,6 +2047,8 @@ export type UserUpdateWithoutCreatedCoursesInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedCoursesInput = {
@@ -1970,6 +2078,8 @@ export type UserUncheckedUpdateWithoutCreatedCoursesInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutCoursesInput = {
@@ -2009,6 +2119,8 @@ export type UserUpdateWithoutCoursesInput = {
   heatmapDatas?: Prisma.HeatmapDataUpdateManyWithoutUserNestedInput
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCoursesInput = {
@@ -2038,6 +2150,8 @@ export type UserUncheckedUpdateWithoutCoursesInput = {
   heatmapDatas?: Prisma.HeatmapDataUncheckedUpdateManyWithoutUserNestedInput
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCourseProgressInput = {
@@ -2066,6 +2180,8 @@ export type UserCreateWithoutCourseProgressInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCourseProgressInput = {
@@ -2095,6 +2211,8 @@ export type UserUncheckedCreateWithoutCourseProgressInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCourseProgressInput = {
@@ -2139,6 +2257,8 @@ export type UserUpdateWithoutCourseProgressInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCourseProgressInput = {
@@ -2168,6 +2288,8 @@ export type UserUncheckedUpdateWithoutCourseProgressInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCompletedItemsInput = {
@@ -2196,6 +2318,8 @@ export type UserCreateWithoutCompletedItemsInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCompletedItemsInput = {
@@ -2225,6 +2349,8 @@ export type UserUncheckedCreateWithoutCompletedItemsInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCompletedItemsInput = {
@@ -2269,6 +2395,8 @@ export type UserUpdateWithoutCompletedItemsInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCompletedItemsInput = {
@@ -2298,6 +2426,8 @@ export type UserUncheckedUpdateWithoutCompletedItemsInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutHeatmapDatasInput = {
@@ -2326,6 +2456,8 @@ export type UserCreateWithoutHeatmapDatasInput = {
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHeatmapDatasInput = {
@@ -2355,6 +2487,8 @@ export type UserUncheckedCreateWithoutHeatmapDatasInput = {
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHeatmapDatasInput = {
@@ -2399,6 +2533,8 @@ export type UserUpdateWithoutHeatmapDatasInput = {
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHeatmapDatasInput = {
@@ -2428,6 +2564,8 @@ export type UserUncheckedUpdateWithoutHeatmapDatasInput = {
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutUserActionsInput = {
@@ -2456,6 +2594,8 @@ export type UserCreateWithoutUserActionsInput = {
   heatmapDatas?: Prisma.HeatmapDataCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUserActionsInput = {
@@ -2485,6 +2625,8 @@ export type UserUncheckedCreateWithoutUserActionsInput = {
   heatmapDatas?: Prisma.HeatmapDataUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUserActionsInput = {
@@ -2529,6 +2671,8 @@ export type UserUpdateWithoutUserActionsInput = {
   heatmapDatas?: Prisma.HeatmapDataUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUserActionsInput = {
@@ -2558,6 +2702,8 @@ export type UserUncheckedUpdateWithoutUserActionsInput = {
   heatmapDatas?: Prisma.HeatmapDataUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutRefreshTokensInput = {
@@ -2586,6 +2732,8 @@ export type UserCreateWithoutRefreshTokensInput = {
   heatmapDatas?: Prisma.HeatmapDataCreateNestedManyWithoutUserInput
   userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseCreateNestedManyWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -2615,6 +2763,8 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   heatmapDatas?: Prisma.HeatmapDataUncheckedCreateNestedManyWithoutUserInput
   userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
   courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -2659,6 +2809,8 @@ export type UserUpdateWithoutRefreshTokensInput = {
   heatmapDatas?: Prisma.HeatmapDataUpdateManyWithoutUserNestedInput
   userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -2688,6 +2840,284 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   heatmapDatas?: Prisma.HeatmapDataUncheckedUpdateManyWithoutUserNestedInput
   userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
   courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutPurchasedCoursesInput = {
+  email: string
+  login: string
+  password: string
+  avatarUrl?: string | null
+  balance?: number
+  role?: $Enums.Role
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ownedOrganizations?: Prisma.OrganizationCreateNestedManyWithoutOwnerInput
+  organizationMembers?: Prisma.MemberCreateNestedManyWithoutUserInput
+  createdCourses?: Prisma.CourseCreateNestedManyWithoutAuthorInput
+  transactions?: Prisma.TransactionCreateNestedManyWithoutUserInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutUserInput
+  banInfo?: Prisma.BanInfoCreateNestedOneWithoutUserInput
+  appeals?: Prisma.AppealCreateNestedManyWithoutUserInput
+  courseProgress?: Prisma.UserCourseProgressCreateNestedManyWithoutUserInput
+  completedItems?: Prisma.CompletedItemCreateNestedManyWithoutUserInput
+  twoFactorBackupCodes?: Prisma.TwoFactorBackupCodeCreateNestedManyWithoutUserInput
+  heatmapDatas?: Prisma.HeatmapDataCreateNestedManyWithoutUserInput
+  userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
+  courses?: Prisma.CourseCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutPurchasedCoursesInput = {
+  id?: number
+  email: string
+  login: string
+  password: string
+  avatarUrl?: string | null
+  balance?: number
+  role?: $Enums.Role
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ownedOrganizations?: Prisma.OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+  organizationMembers?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  createdCourses?: Prisma.CourseUncheckedCreateNestedManyWithoutAuthorInput
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutUserInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutUserInput
+  banInfo?: Prisma.BanInfoUncheckedCreateNestedOneWithoutUserInput
+  appeals?: Prisma.AppealUncheckedCreateNestedManyWithoutUserInput
+  courseProgress?: Prisma.UserCourseProgressUncheckedCreateNestedManyWithoutUserInput
+  completedItems?: Prisma.CompletedItemUncheckedCreateNestedManyWithoutUserInput
+  twoFactorBackupCodes?: Prisma.TwoFactorBackupCodeUncheckedCreateNestedManyWithoutUserInput
+  heatmapDatas?: Prisma.HeatmapDataUncheckedCreateNestedManyWithoutUserInput
+  userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutPurchasedCoursesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPurchasedCoursesInput, Prisma.UserUncheckedCreateWithoutPurchasedCoursesInput>
+}
+
+export type UserUpsertWithoutPurchasedCoursesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPurchasedCoursesInput, Prisma.UserUncheckedUpdateWithoutPurchasedCoursesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPurchasedCoursesInput, Prisma.UserUncheckedCreateWithoutPurchasedCoursesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPurchasedCoursesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPurchasedCoursesInput, Prisma.UserUncheckedUpdateWithoutPurchasedCoursesInput>
+}
+
+export type UserUpdateWithoutPurchasedCoursesInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  login?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.IntFieldUpdateOperationsInput | number
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ownedOrganizations?: Prisma.OrganizationUpdateManyWithoutOwnerNestedInput
+  organizationMembers?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  createdCourses?: Prisma.CourseUpdateManyWithoutAuthorNestedInput
+  transactions?: Prisma.TransactionUpdateManyWithoutUserNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutUserNestedInput
+  banInfo?: Prisma.BanInfoUpdateOneWithoutUserNestedInput
+  appeals?: Prisma.AppealUpdateManyWithoutUserNestedInput
+  courseProgress?: Prisma.UserCourseProgressUpdateManyWithoutUserNestedInput
+  completedItems?: Prisma.CompletedItemUpdateManyWithoutUserNestedInput
+  twoFactorBackupCodes?: Prisma.TwoFactorBackupCodeUpdateManyWithoutUserNestedInput
+  heatmapDatas?: Prisma.HeatmapDataUpdateManyWithoutUserNestedInput
+  userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPurchasedCoursesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  login?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.IntFieldUpdateOperationsInput | number
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ownedOrganizations?: Prisma.OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+  organizationMembers?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  createdCourses?: Prisma.CourseUncheckedUpdateManyWithoutAuthorNestedInput
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutUserNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutUserNestedInput
+  banInfo?: Prisma.BanInfoUncheckedUpdateOneWithoutUserNestedInput
+  appeals?: Prisma.AppealUncheckedUpdateManyWithoutUserNestedInput
+  courseProgress?: Prisma.UserCourseProgressUncheckedUpdateManyWithoutUserNestedInput
+  completedItems?: Prisma.CompletedItemUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorBackupCodes?: Prisma.TwoFactorBackupCodeUncheckedUpdateManyWithoutUserNestedInput
+  heatmapDatas?: Prisma.HeatmapDataUncheckedUpdateManyWithoutUserNestedInput
+  userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutReviewsInput = {
+  email: string
+  login: string
+  password: string
+  avatarUrl?: string | null
+  balance?: number
+  role?: $Enums.Role
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ownedOrganizations?: Prisma.OrganizationCreateNestedManyWithoutOwnerInput
+  organizationMembers?: Prisma.MemberCreateNestedManyWithoutUserInput
+  createdCourses?: Prisma.CourseCreateNestedManyWithoutAuthorInput
+  transactions?: Prisma.TransactionCreateNestedManyWithoutUserInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutUserInput
+  banInfo?: Prisma.BanInfoCreateNestedOneWithoutUserInput
+  appeals?: Prisma.AppealCreateNestedManyWithoutUserInput
+  courseProgress?: Prisma.UserCourseProgressCreateNestedManyWithoutUserInput
+  completedItems?: Prisma.CompletedItemCreateNestedManyWithoutUserInput
+  twoFactorBackupCodes?: Prisma.TwoFactorBackupCodeCreateNestedManyWithoutUserInput
+  heatmapDatas?: Prisma.HeatmapDataCreateNestedManyWithoutUserInput
+  userActions?: Prisma.UserActionsCreateNestedManyWithoutUserInput
+  courses?: Prisma.CourseCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutReviewsInput = {
+  id?: number
+  email: string
+  login: string
+  password: string
+  avatarUrl?: string | null
+  balance?: number
+  role?: $Enums.Role
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ownedOrganizations?: Prisma.OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+  organizationMembers?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  createdCourses?: Prisma.CourseUncheckedCreateNestedManyWithoutAuthorInput
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutUserInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutUserInput
+  banInfo?: Prisma.BanInfoUncheckedCreateNestedOneWithoutUserInput
+  appeals?: Prisma.AppealUncheckedCreateNestedManyWithoutUserInput
+  courseProgress?: Prisma.UserCourseProgressUncheckedCreateNestedManyWithoutUserInput
+  completedItems?: Prisma.CompletedItemUncheckedCreateNestedManyWithoutUserInput
+  twoFactorBackupCodes?: Prisma.TwoFactorBackupCodeUncheckedCreateNestedManyWithoutUserInput
+  heatmapDatas?: Prisma.HeatmapDataUncheckedCreateNestedManyWithoutUserInput
+  userActions?: Prisma.UserActionsUncheckedCreateNestedManyWithoutUserInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedOneWithoutUserInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutReviewsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReviewsInput, Prisma.UserUncheckedCreateWithoutReviewsInput>
+}
+
+export type UserUpsertWithoutReviewsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReviewsInput, Prisma.UserUncheckedUpdateWithoutReviewsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReviewsInput, Prisma.UserUncheckedCreateWithoutReviewsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReviewsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReviewsInput, Prisma.UserUncheckedUpdateWithoutReviewsInput>
+}
+
+export type UserUpdateWithoutReviewsInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  login?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.IntFieldUpdateOperationsInput | number
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ownedOrganizations?: Prisma.OrganizationUpdateManyWithoutOwnerNestedInput
+  organizationMembers?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  createdCourses?: Prisma.CourseUpdateManyWithoutAuthorNestedInput
+  transactions?: Prisma.TransactionUpdateManyWithoutUserNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutUserNestedInput
+  banInfo?: Prisma.BanInfoUpdateOneWithoutUserNestedInput
+  appeals?: Prisma.AppealUpdateManyWithoutUserNestedInput
+  courseProgress?: Prisma.UserCourseProgressUpdateManyWithoutUserNestedInput
+  completedItems?: Prisma.CompletedItemUpdateManyWithoutUserNestedInput
+  twoFactorBackupCodes?: Prisma.TwoFactorBackupCodeUpdateManyWithoutUserNestedInput
+  heatmapDatas?: Prisma.HeatmapDataUpdateManyWithoutUserNestedInput
+  userActions?: Prisma.UserActionsUpdateManyWithoutUserNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReviewsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  login?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance?: Prisma.IntFieldUpdateOperationsInput | number
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ownedOrganizations?: Prisma.OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+  organizationMembers?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  createdCourses?: Prisma.CourseUncheckedUpdateManyWithoutAuthorNestedInput
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutUserNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutUserNestedInput
+  banInfo?: Prisma.BanInfoUncheckedUpdateOneWithoutUserNestedInput
+  appeals?: Prisma.AppealUncheckedUpdateManyWithoutUserNestedInput
+  courseProgress?: Prisma.UserCourseProgressUncheckedUpdateManyWithoutUserNestedInput
+  completedItems?: Prisma.CompletedItemUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorBackupCodes?: Prisma.TwoFactorBackupCodeUncheckedUpdateManyWithoutUserNestedInput
+  heatmapDatas?: Prisma.HeatmapDataUncheckedUpdateManyWithoutUserNestedInput
+  userActions?: Prisma.UserActionsUncheckedUpdateManyWithoutUserNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateOneWithoutUserNestedInput
+  purchasedCourses?: Prisma.PurchasedCoursesUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -2708,6 +3138,8 @@ export type UserCountOutputType = {
   heatmapDatas: number
   userActions: number
   courses: number
+  purchasedCourses: number
+  reviews: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2723,6 +3155,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   heatmapDatas?: boolean | UserCountOutputTypeCountHeatmapDatasArgs
   userActions?: boolean | UserCountOutputTypeCountUserActionsArgs
   courses?: boolean | UserCountOutputTypeCountCoursesArgs
+  purchasedCourses?: boolean | UserCountOutputTypeCountPurchasedCoursesArgs
+  reviews?: boolean | UserCountOutputTypeCountReviewsArgs
 }
 
 /**
@@ -2819,6 +3253,20 @@ export type UserCountOutputTypeCountCoursesArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.CourseWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPurchasedCoursesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PurchasedCoursesWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReviewWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2848,6 +3296,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   userActions?: boolean | Prisma.User$userActionsArgs<ExtArgs>
   courses?: boolean | Prisma.User$coursesArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
+  purchasedCourses?: boolean | Prisma.User$purchasedCoursesArgs<ExtArgs>
+  reviews?: boolean | Prisma.User$reviewsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2915,6 +3365,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   userActions?: boolean | Prisma.User$userActionsArgs<ExtArgs>
   courses?: boolean | Prisma.User$coursesArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
+  purchasedCourses?: boolean | Prisma.User$purchasedCoursesArgs<ExtArgs>
+  reviews?: boolean | Prisma.User$reviewsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2937,6 +3389,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     userActions: Prisma.$UserActionsPayload<ExtArgs>[]
     courses: Prisma.$CoursePayload<ExtArgs>[]
     refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs> | null
+    purchasedCourses: Prisma.$PurchasedCoursesPayload<ExtArgs>[]
+    reviews: Prisma.$ReviewPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -3360,6 +3814,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   userActions<T extends Prisma.User$userActionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$userActionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserActionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   courses<T extends Prisma.User$coursesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$coursesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   refreshTokens<T extends Prisma.User$refreshTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$refreshTokensArgs<ExtArgs>>): Prisma.Prisma__RefreshTokenClient<runtime.Types.Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  purchasedCourses<T extends Prisma.User$purchasedCoursesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$purchasedCoursesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PurchasedCoursesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reviews<T extends Prisma.User$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4113,6 +4569,54 @@ export type User$refreshTokensArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   include?: Prisma.RefreshTokenInclude<ExtArgs> | null
   where?: Prisma.RefreshTokenWhereInput
+}
+
+/**
+ * User.purchasedCourses
+ */
+export type User$purchasedCoursesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PurchasedCourses
+   */
+  select?: Prisma.PurchasedCoursesSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PurchasedCourses
+   */
+  omit?: Prisma.PurchasedCoursesOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PurchasedCoursesInclude<ExtArgs> | null
+  where?: Prisma.PurchasedCoursesWhereInput
+  orderBy?: Prisma.PurchasedCoursesOrderByWithRelationInput | Prisma.PurchasedCoursesOrderByWithRelationInput[]
+  cursor?: Prisma.PurchasedCoursesWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PurchasedCoursesScalarFieldEnum | Prisma.PurchasedCoursesScalarFieldEnum[]
+}
+
+/**
+ * User.reviews
+ */
+export type User$reviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Review
+   */
+  select?: Prisma.ReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Review
+   */
+  omit?: Prisma.ReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReviewInclude<ExtArgs> | null
+  where?: Prisma.ReviewWhereInput
+  orderBy?: Prisma.ReviewOrderByWithRelationInput | Prisma.ReviewOrderByWithRelationInput[]
+  cursor?: Prisma.ReviewWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReviewScalarFieldEnum | Prisma.ReviewScalarFieldEnum[]
 }
 
 /**

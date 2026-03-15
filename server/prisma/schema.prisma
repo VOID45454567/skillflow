@@ -17,10 +17,10 @@ enum Role {
 }
 
 enum VerificationStatus {
+  REJECTED // Отклонен
   UNVERIFIED // Не верифицирован
   PENDING // Ожидает проверки
   VERIFIED // Верифицирован
-  REJECTED // Отклонен
 }
 
 enum OrganizationRole {
@@ -34,7 +34,6 @@ enum CourseStatus {
   PENDING // На модерации
   PUBLISHED // Опубликован
   REJECTED // Отклонен
-  ARCHIVED // В архиве
 }
 
 enum CourseLevel {
@@ -115,6 +114,8 @@ model User {
   userActions          UserActions[]
   courses              Course[]
   refreshTokens        RefreshToken?
+  purchasedCourses     PurchasedCourses[]
+  reviews              Review[]
 
   @@map("users")
 }
@@ -287,6 +288,10 @@ model Course {
   author   User @relation("Author", fields: [authorId], references: [id])
   authorId Int
 
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+
+  rating String?
+
   // Организация
   organization   Organization? @relation(fields: [organizationId], references: [id])
   organizationId Int?
@@ -301,12 +306,16 @@ model Course {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  modules        Module[]
-  purchases      Payment[]
-  progress       UserCourseProgress[]
-  completedItems CompletedItem[]
-  user           User?                @relation(fields: [userId], references: [id])
-  userId         Int?
+  modules          Module[]
+  purchases        Payment[]
+  progress         UserCourseProgress[]
+  completedItems   CompletedItem[]
+  user             User?                @relation(fields: [userId], references: [id])
+  userId           Int?
+  goalCategory     CourseCategory[]
+  goalTags         CourseTag[]
+  purchasedCourses PurchasedCourses[]
+  reviews          Review[]
 
   @@index([status])
   @@index([authorId]) // ← ДОБАВЛЕНО
@@ -460,4 +469,68 @@ model RefreshToken {
   isRevoked  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Tags {
+  id        Int         @id @default(autoincrement())
+  name      String      @unique
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  GoalTag   CourseTag[]
+}
+
+model Categories {
+  id           Int              @id @default(autoincrement())
+  name         String           @unique
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+  GoalCategory CourseCategory[]
+}
+
+model CourseCategory {
+  id           Int        @id @default(autoincrement())
+  category     Categories @relation(fields: [categoriesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  categoriesId Int
+  course       Course     @relation(fields: [goalsId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  goalsId      Int
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@unique([categoriesId, goalsId])
+  @@map("goal_category")
+}
+
+model CourseTag {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  tag       Tags     @relation(fields: [tagsId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  course    Course   @relation(fields: [goalsId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tagsId    Int
+  goalsId   Int
+
+  @@unique([tagsId, goalsId])
+  @@map("goal_tag")
+}
+
+model PurchasedCourses {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  courseId  Int
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  text      String
+  points    Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  courseId  Int
 }

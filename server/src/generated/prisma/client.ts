@@ -122,3 +122,33 @@ export type UserActions = Prisma.UserActionsModel
  * 
  */
 export type RefreshToken = Prisma.RefreshTokenModel
+/**
+ * Model Tags
+ * 
+ */
+export type Tags = Prisma.TagsModel
+/**
+ * Model Categories
+ * 
+ */
+export type Categories = Prisma.CategoriesModel
+/**
+ * Model CourseCategory
+ * 
+ */
+export type CourseCategory = Prisma.CourseCategoryModel
+/**
+ * Model CourseTag
+ * 
+ */
+export type CourseTag = Prisma.CourseTagModel
+/**
+ * Model PurchasedCourses
+ * 
+ */
+export type PurchasedCourses = Prisma.PurchasedCoursesModel
+/**
+ * Model Review
+ * 
+ */
+export type Review = Prisma.ReviewModel

@@ -67,7 +67,13 @@ export const ModelName = {
   Stats: 'Stats',
   HeatmapData: 'HeatmapData',
   UserActions: 'UserActions',
-  RefreshToken: 'RefreshToken'
+  RefreshToken: 'RefreshToken',
+  Tags: 'Tags',
+  Categories: 'Categories',
+  CourseCategory: 'CourseCategory',
+  CourseTag: 'CourseTag',
+  PurchasedCourses: 'PurchasedCourses',
+  Review: 'Review'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -220,6 +226,8 @@ export const CourseScalarFieldEnum = {
   type: 'type',
   price: 'price',
   authorId: 'authorId',
+  verificationStatus: 'verificationStatus',
+  rating: 'rating',
   organizationId: 'organizationId',
   moderatedBy: 'moderatedBy',
   moderatedAt: 'moderatedAt',
@@ -339,6 +347,72 @@ export const RefreshTokenScalarFieldEnum = {
 } as const
 
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
+
+
+export const TagsScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TagsScalarFieldEnum = (typeof TagsScalarFieldEnum)[keyof typeof TagsScalarFieldEnum]
+
+
+export const CategoriesScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CategoriesScalarFieldEnum = (typeof CategoriesScalarFieldEnum)[keyof typeof CategoriesScalarFieldEnum]
+
+
+export const CourseCategoryScalarFieldEnum = {
+  id: 'id',
+  categoriesId: 'categoriesId',
+  goalsId: 'goalsId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CourseCategoryScalarFieldEnum = (typeof CourseCategoryScalarFieldEnum)[keyof typeof CourseCategoryScalarFieldEnum]
+
+
+export const CourseTagScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  tagsId: 'tagsId',
+  goalsId: 'goalsId'
+} as const
+
+export type CourseTagScalarFieldEnum = (typeof CourseTagScalarFieldEnum)[keyof typeof CourseTagScalarFieldEnum]
+
+
+export const PurchasedCoursesScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  courseId: 'courseId'
+} as const
+
+export type PurchasedCoursesScalarFieldEnum = (typeof PurchasedCoursesScalarFieldEnum)[keyof typeof PurchasedCoursesScalarFieldEnum]
+
+
+export const ReviewScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  text: 'text',
+  points: 'points',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  courseId: 'courseId'
+} as const
+
+export type ReviewScalarFieldEnum = (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum]
 
 
 export const SortOrder = {

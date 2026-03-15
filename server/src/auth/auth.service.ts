@@ -129,7 +129,7 @@ export class AuthService {
                 { expiresIn: '5m' }
             );
 
-            res.cookie('temp_token', tempToken, {
+            res.cookie('access_token', tempToken, {
                 httpOnly: true,
                 secure: false,
                 maxAge: 5 * 60 * 1000,
