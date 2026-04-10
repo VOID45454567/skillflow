@@ -1,301 +1,340 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import type { RegisterDto } from './dto/register.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginDto } from './dto/login.dto';
-import { Request, Response } from 'express';
-import { UsersService } from 'src/users/users.service';
-import * as bcrypt from 'bcrypt'
+import { RegisterDto } from './dto/register.dto';
+import * as brcypt from 'bcrypt'
+import { ConfigService } from '@nestjs/config';
+import e, { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { Cron } from '@nestjs/schedule';
-import { randomBytes } from 'crypto';
-import { User } from 'src/generated/prisma/client';
+import { LoginDto } from './dto/login.dto';
+import crypto from 'crypto'
+import { PrismaService } from '@/prisma/prisma.service';
+import { UsersService } from '@/users/users.service';
+import { Roles } from '../../prisma/generated/prisma';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
     constructor(
-        readonly prisma: PrismaService,
-        readonly users: UsersService,
-        readonly jwtService: JwtService
+        private readonly prisma: PrismaService,
+        private readonly users: UsersService,
+        private readonly configService: ConfigService,
+        private readonly jwt: JwtService,
+        private readonly mail: MailerService
     ) { }
+
     async register(dto: RegisterDto, res: Response) {
         const existingUser = await this.users.findByEmail(dto.email)
+
         if (existingUser) {
-            throw new ConflictException('Такой пользователь уже есть')
-        }
-        const hashedPass = await bcrypt.hash(dto.password, 10)
-        const newUser = await this.users.create({ ...dto, password: hashedPass })
-        const tokens = await this.createTokensPair(newUser)
-        this.setCookie(res, tokens.refreshToken, tokens.accessToken)
-    }
-
-    @Cron('0 0 * * *')
-    async cleanupRevokedTokens() {
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
-        const result = await this.prisma.refreshToken.deleteMany({
-            where: {
-                isRevoked: true,
-                createdAt: { lt: thirtyDaysAgo }
-            }
-        });
-
-        console.log(`Очищено ${result.count} старых отозванных токенов`);
-    }
-
-    async verifyTwoFactorCode(userId: number, code: string) {
-        const user = await this.users.findById(userId)
-        if (!user) {
-            throw new NotFoundException('Не найденн')
-        }
-        const backupCode = await this.prisma.twoFactorBackupCode.findFirst({
-            where: {
-                userId,
-                code: code,
-                isUsed: false
-            }
-        });
-
-        if (!backupCode) {
-            return false;
+            throw new ConflictException({ message: "пользователь с такой почтой уже есть" })
         }
 
-        await this.prisma.twoFactorBackupCode.update({
-            where: { id: backupCode.id },
-            data: { isUsed: true }
-        });
+        const salt = this.configService.getOrThrow<string>('BCRYPT_SALT_ROUNDS')
 
-        return true;
-    }
+        const hashedPassword = await brcypt.hash(dto.password, Number(salt))
 
-    async enableTwoFactorVerification(userId: number) {
-        const user = await this.users.findById(userId);
-        if (!user) {
-            throw new NotFoundException('Пользователь не найден');
-        }
+        const newUser = await this.prisma.user.create({ data: { ...dto, password: hashedPassword } })
 
-        await this.prisma.twoFactorBackupCode.deleteMany({
-            where: { userId }
-        });
+        const { accessToken, refreshToken } = await this.generateTokensPair(newUser.id, newUser.role, newUser.email)
 
-        await this.prisma.user.update({
-            where: { id: userId },
-            data: { twoFactorEnabled: false }
-        });
+        this.setCookies(res, refreshToken, accessToken)
 
-        return {
-            message: '2FA успешно отключен'
-        };
-    }
-
-    async disableTwoFactor(userId: number) {
-        const user = await this.users.findById(userId);
-        if (!user) {
-            throw new NotFoundException('Пользователь не найден');
-        }
-
-        await this.prisma.twoFactorBackupCode.deleteMany({
-            where: { userId }
-        });
-
-        await this.prisma.user.update({
-            where: { id: userId },
-            data: { twoFactorEnabled: false }
-        });
-
-        return {
-            message: '2FA успешно отключен'
-        };
+        return newUser
     }
 
     async login(dto: LoginDto, res: Response) {
         const existingUser = await this.users.findByEmail(dto.email)
-
         if (!existingUser) {
-            throw new NotFoundException('Такого пользователя нету')
+            throw new NotFoundException({ message: 'Пользователь не найден' })
         }
 
-        const isMatch = await this.checkPassword(dto.password, existingUser)
-        if (!isMatch) {
-            throw new UnauthorizedException('Неверный логин или пароль')
+        const isPasswordMatch = await brcypt.compare(dto.password, existingUser.password)
+
+        if (!isPasswordMatch) {
+            throw new UnauthorizedException({ message: 'Неверные данные' })
         }
 
-        if (existingUser.twoFactorEnabled) {
-            const tempToken = this.jwtService.sign(
-                {
-                    sub: existingUser.id,
-                    type: '2fa_pending',
-                    email: existingUser.email
-                },
-                { expiresIn: '5m' }
-            );
+        if (existingUser.enabledTwoFactor) {
+            return { requiresTwoFactor: true, userId: existingUser.id }
+        }
 
-            res.cookie('access_token', tempToken, {
-                httpOnly: true,
-                secure: false,
-                maxAge: 5 * 60 * 1000,
-            });
+        const { accessToken, refreshToken } = await this.generateTokensPair(
+            existingUser.id,
+            existingUser.role,
+            existingUser.email
+        )
 
+        this.setCookies(res, refreshToken, accessToken)
+
+        return existingUser
+    }
+
+    async verify2fa(code: string, userId: number, res: Response) {
+        const dbCode = await this.prisma.twoVerificationCode.findFirst({
+            where: {
+                userId,
+                isUsed: false,
+            }
+        })
+
+        if (!dbCode) {
             return {
-                requiresTwoFactor: true,
-                message: 'Требуется подтверждение 2FA',
-                tempToken: tempToken
-            };
+                success: false,
+                message: 'Нет активных кодов'
+            }
         }
 
-        const tokens = await this.createTokensPair(existingUser);
-        this.setCookie(res, tokens.refreshToken, tokens.accessToken);
-    }
+        const user = await this.users.findById(userId)
 
-    private async checkPassword(plainTextPass: string, user: User) {
-        return await bcrypt.compare(plainTextPass, user.password)
-    }
 
-    async setTwoFactorBackupCode(id: number) {
-        const user = await this.users.findById(id)
-        if (!user) {
-            throw new NotFoundException('Такого пользователя нету')
+        try {
+            await this.mail.sendMail({
+                to: user!.email,
+                subject: 'Требуется подтверждение входа',
+                text: `Здравствуйте ${user!.login}, код для входа - ${dbCode}`
+            })
+        } catch (error) {
+            console.log(error);
         }
 
-        const backupCodes = Array.from({ length: 4 }, () => ({
-            code: randomBytes(6).toString('hex').toUpperCase(),
-            userId: id
-        }));
 
-        await this.prisma.twoFactorBackupCode.deleteMany({
-            where: { userId: id }
-        });
 
-        await this.prisma.twoFactorBackupCode.createMany({
-            data: backupCodes
-        });
+        if (dbCode.code !== code) {
+            return {
+                success: false,
+                message: 'Неверный код, попробуйте еще раз'
+            }
+        }
 
-        await this.prisma.user.update({
-            where: { id },
-            data: { twoFactorEnabled: true }
-        });
+        await this.prisma.twoVerificationCode.update({
+            where: { id: dbCode.id },
+            data: { isUsed: true }
+        })
 
+        const { accessToken, refreshToken } = await this.generateTokensPair(
+            userId,
+            user!.role,
+            user!.email
+        )
+
+        this.setCookies(res, refreshToken, accessToken)
+        const userCodes = await this.prisma.twoVerificationCode.findMany({ where: { userId: userId } })
+
+        if (userCodes.length < 2) {
+            console.log('Мало кодов');
+            await this.regenerate2faCodes(userId)
+        }
+
+        return {
+            success: true,
+            message: '2FA подтвержден',
+            user
+        }
+    }
+
+    async logout(res: Response) {
+        res.clearCookie('accessToken')
+        res.clearCookie('refreshToken')
     }
 
     async getMe(req: Request) {
-        const accessToken = req.cookies['access_token'];
+        const accessToken = req.cookies.accessToken
+        if (!accessToken) {
+            throw new UnauthorizedException({ message: "Токена нет" })
+        }
+
         try {
-            const payload = this.jwtService.verify(accessToken);
-            const user = await this.users.findById(payload.sub);
-
-            if (!user) {
-                throw new UnauthorizedException('Пользователь не найден');
-            }
-
-            const { password, ...userData } = user;
-            return userData;
+            const tokenPayload = this.jwt.verify(accessToken)
+            return await this.users.findById(tokenPayload.id)
         } catch (error) {
-            if (error.name === 'TokenExpiredError') {
-                throw new UnauthorizedException('Токен истек');
-            }
-            throw new UnauthorizedException('Недействительный токен');
+            throw new UnauthorizedException({ message: "Неверный токен" })
         }
     }
 
-    async logout(userId: number, res: Response) {
-        await this.revokeAllUserTokens(userId)
-        this.clearCookie(res)
-    }
+    private async generateTokensPair(id: number, role: Roles, email: string) {
+        const accessToken = this.jwt.sign(
+            { id, role, email },
+            { expiresIn: this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES') }
+        );
 
-    async refreshTokens(refreshTokenValue: string, res: Response, req: Request) {
-        const refreshToken = await this.prisma.refreshToken.findFirst({
-            where: {
-                tokenValue: refreshTokenValue,
-                isRevoked: false
-            },
-            include: { user: true }
+        let refreshToken: string;
+        let existingRefreshToken = await this.prisma.refreshToken.findFirst({
+            where: { userId: id }
         });
 
-        if (!refreshToken) {
-            throw new UnauthorizedException('Недействительный refresh токен');
+        if (existingRefreshToken) {
+            refreshToken = existingRefreshToken.tokenValue;
+        } else {
+            refreshToken = this.jwt.sign(
+                { id, role, email },
+                { expiresIn: this.configService.getOrThrow<string>('JWT_REFRESH_EXPIRES') }
+            );
+
+            await this.prisma.refreshToken.create({
+                data: {
+                    tokenValue: refreshToken,
+                    userId: id
+                }
+            });
         }
 
-        if (refreshToken.expiriesAt < new Date()) {
-            await this.revokeRefreshToken(refreshToken.id);
-            throw new UnauthorizedException('Refresh токен истек');
-        }
-
-        await this.revokeRefreshToken(refreshToken.id);
-
-        const tokens = await this.createTokensPair(refreshToken.user);
-        this.setCookie(res, tokens.refreshToken, tokens.accessToken);
-
-        return { message: 'Токены обновлены' };
+        return { accessToken, refreshToken };
     }
 
-    async revokeRefreshToken(tokenId: number) {
-        return this.prisma.refreshToken.update({
-            where: { id: tokenId }, data: {
-                isRevoked: true
-            }
+    private setCookies(res: Response, refreshToken: string, accessToken: string) {
+        const isProduction = this.configService.get('NODE_ENV') === 'production'
+        const accessTokenMaxAge = this.getMaxAgeFromExpires(this.configService.getOrThrow<string>('JWT_EXPIRES'))
+        const refreshTokenMaxAge = this.getMaxAgeFromExpires(this.configService.getOrThrow<string>('JWT_REFRESH_EXPIRES'))
+
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'strict',
+            maxAge: accessTokenMaxAge
+        })
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'strict',
+            maxAge: refreshTokenMaxAge
         })
     }
-    async revokeAllUserTokens(userId: number) {
-        return this.prisma.refreshToken.updateMany({
+
+    private getMaxAgeFromExpires(expiresIn: string): number {
+        const units: { [key: string]: number } = {
+            's': 1,
+            'm': 60,
+            'h': 3600,
+            'd': 86400,
+            'w': 604800
+        }
+
+        const match = expiresIn.match(/^(\d+)([smhdw])$/)
+        if (!match) {
+            return 10 * 60 * 1000
+        }
+
+        const value = parseInt(match[1])
+        const unit = match[2]
+
+        return value * units[unit] * 1000
+    }
+
+    async enable2fa(userId: number) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { enabledTwoFactor: true }
+        })
+
+        const codesCount = this.configService.getOrThrow<number>('TWO_FACTOR_CODES_COUNT')
+        const codes = this.generateTwofactorCodes(codesCount)
+        const expiresAt = new Date()
+        expiresAt.setMinutes(expiresAt.getMinutes() + 10)
+
+        codes.forEach(async (code) => {
+            await this.prisma.twoVerificationCode.create({
+                data: {
+                    code: code,
+                    userId: userId,
+                }
+            })
+        })
+
+        return { codes }
+    }
+
+    async disable2fa(userId: number) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { enabledTwoFactor: false }
+        })
+
+        await this.prisma.twoVerificationCode.deleteMany({ where: { userId } })
+    }
+
+    async regenerate2faCodes(userId: number) {
+        await this.prisma.twoVerificationCode.deleteMany({
+            where: { userId },
+        })
+
+        const codesCount = this.configService.getOrThrow<number>('TWO_FACTOR_CODES_COUNT')
+        const codes = this.generateTwofactorCodes(codesCount)
+        const expiresAt = new Date()
+        expiresAt.setMinutes(expiresAt.getMinutes() + 10)
+
+        await this.prisma.twoVerificationCode.createMany({
+            data: codes.map(code => ({
+                userId,
+                code,
+                isUsed: false,
+                expiresAt,
+            })),
+        })
+
+        return codes
+    }
+
+    async get2faStatus(userId: number) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { enabledTwoFactor: true },
+        })
+
+        const activeCodesCount = await this.prisma.twoVerificationCode.count({
             where: {
                 userId,
-                isRevoked: false
+                isUsed: false,
             },
-            data: {
-                isRevoked: true
-            }
-        });
-    }
-    private setCookie(res: Response, refreshToken: string, accessToken: string) {
-        res.cookie('access_token', accessToken, {
-            expires: new Date(Date.now() + 1000 * 60 * 30),
-            httpOnly: true,
-            secure: false,
-        })
-        res.cookie('refresh_token', refreshToken, {
-            expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-            httpOnly: true,
-            secure: false,
         })
 
-    }
-
-    private clearCookie(res: Response) {
-        res.clearCookie('access_token', {
-            httpOnly: true,
-            secure: false,
-        })
-        res.clearCookie('refresh_token', {
-            httpOnly: true,
-            secure: false,
-        })
-    }
-
-    private async createTokensPair(user: User) {
-        const accessToken = this.jwtService.sign({ sub: user.id, email: user.email, role: user.role })
-        const refreshToken = await this.generateRefreshToken()
-        await this.createRefreshToken(user, refreshToken)
         return {
-            accessToken,
-            refreshToken
+            enabled: user?.enabledTwoFactor || false,
+            activeCodesCount,
+            totalCodes: user?.enabledTwoFactor ?
+                await this.prisma.twoVerificationCode.count({ where: { userId } }) : 0,
         }
     }
 
-    private async createRefreshToken(user: User, refreshToken: string) {
-        const existingToken = await this.prisma.refreshToken.findUnique({ where: { userId: user.id } })
-        if (!existingToken) {
-            throw new NotFoundException('Токен не найден')
-        }
-        await this.prisma.refreshToken.delete({ where: { id: existingToken.id } })
-        await this.prisma.refreshToken.create({
-            data: {
-                expiriesAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                tokenValue: refreshToken,
-                userId: user.id,
-            }
+    async refreshTokens(refreshToken: string, res: Response) {
+        console.log(refreshToken);
+
+        const storedToken = await this.prisma.refreshToken.findFirst({
+            where: { tokenValue: refreshToken },
+            include: { user: true },
         })
+
+        if (!storedToken) {
+            throw new UnauthorizedException('Invalid refresh token')
+        }
+
+        try {
+            const payload = this.jwt.verify(refreshToken)
+
+            const { accessToken, refreshToken: newRefreshToken } =
+                await this.generateTokensPair(
+                    payload.id,
+                    payload.role,
+                    payload.email,
+                )
+
+            await this.prisma.refreshToken.delete({
+                where: { id: storedToken.id },
+            })
+
+            this.setCookies(res, newRefreshToken, accessToken)
+
+            return { success: true }
+        } catch (error) {
+            throw new UnauthorizedException('Refresh token expired')
+        }
     }
 
-    private async generateRefreshToken() {
-        return randomBytes(30).toString('hex')
+    private generateTwofactorCodes(count: number) {
+        return Array.from({ length: count }, () => crypto.randomInt(100000, 1000000).toString().padStart(6, '0'))
+    }
+
+
+    async sendAccountToVerification(id: number) {
+        return await this.users.sendAccountToVerification(id)
     }
 }

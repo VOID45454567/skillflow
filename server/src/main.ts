@@ -1,21 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser'
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
-
+import { validatorOptions } from './conf/validation';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.setGlobalPrefix('api')
+
+  app.useGlobalPipes(new ValidationPipe(validatorOptions))
+
   app.use(cookieParser())
-  app.useGlobalPipes(new ValidationPipe({
-    exceptionFactory: (errors) => {
-      const result = errors.map((error) => ({
-        property: error.property,
-        constraints: error.constraints,
-      }));
-      return new BadRequestException(result);
-    },
-  }))
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

@@ -1,223 +1,232 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   Res,
   Req,
-  Get,
-  UseGuards,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
+  UseGuards,
+  Delete,
+  Patch,
   Param,
-  ParseIntPipe,
-  Delete
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import type { Response, Request } from 'express';
-import { JwtAuthGuard } from '../guards/jwt.auth.guard';
-import { User } from '../decorators/User';
+import { Verify2faDto } from './dto/verify-2fa.dto';
+import { CurrentUser } from '@/decorators/current.user.decrator';
+import { JwtAuthGuard } from '@/guards/jwt.auth.guard';
+import { User } from '../../prisma/generated/prisma';
+import { UsersService } from '@/users/users.service';
+import { MinioService } from '@/minio/minio.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+    private readonly minioService: MinioService
+  ) { }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(
-    @Body() dto: RegisterDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return this.authService.register(dto, res);
+  async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.register(dto, res);
+    return {
+      success: true,
+      message: 'Регистрация успешна',
+      data: {
+        user: {
+          id: result.id,
+          email: result.email,
+          login: result.login,
+          role: result.role,
+        },
+      },
+    };
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(
-    @Body() dto: LoginDto,
+  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.login(dto, res);
+
+    if ('requiresTwoFactor' in result && result.requiresTwoFactor) {
+      const twoFactorResult = result as { requiresTwoFactor: boolean; userId: number };
+      return {
+        success: true,
+        requiresTwoFactor: true,
+        message: 'Требуется подтверждение 2FA',
+        userId: twoFactorResult.userId,
+      };
+    }
+
+    const userResult = result as User;
+    return {
+      success: true,
+      message: 'Вход выполнен успешно',
+      data: {
+        user: {
+          id: userResult.id,
+          email: userResult.email,
+          login: userResult.login,
+          role: userResult.role,
+        },
+      },
+    };
+  }
+
+  @Post('verify-2fa')
+  @HttpCode(HttpStatus.OK)
+  async verify2fa(
+    @Body() dto: Verify2faDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.login(dto, res);
+    const result = await this.authService.verify2fa(dto.code, dto.userId, res);
+
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: '2FA подтвержден, вход выполнен',
+      data: {
+        user: result.user,
+      },
+    };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(
-    @User('id') userId: number,
-    @Res({ passthrough: true }) res: Response
-  ) {
-    await this.authService.logout(userId, res);
-    return { message: 'Выход выполнен успешно' };
+  @UseGuards(JwtAuthGuard)
+  async logout(@Res({ passthrough: true }) res: Response) {
+    await this.authService.logout(res);
+    return {
+      success: true,
+      message: 'Выход выполнен успешно',
+    };
   }
 
-  /**
-   * ОБНОВЛЕНИЕ ТОКЕНОВ
-   * POST /auth/refresh
-   */
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getMe(@CurrentUser() user: any) {
+    return {
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          login: user.login,
+          role: user.role,
+          avatarUrl: user.avatarUrl,
+          enabledTwoFactor: user.enabledTwoFactor,
+          createdAt: user.createdAt,
+        },
+      },
+    };
+  }
+
+  @Post('2fa/enable')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async enable2fa(@CurrentUser('id') userId: number) {
+    const result = await this.authService.enable2fa(userId);
+
+    return {
+      success: true,
+      message: '2FA успешно включен',
+      data: {
+        backupCodes: result.codes,
+        warning: 'Сохраните резервные коды в надежном месте',
+      },
+    };
+  }
+
+  @Delete('2fa/disable')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async disable2fa(@CurrentUser('id') userId: number) {
+    await this.authService.disable2fa(userId);
+
+    return {
+      success: true,
+      message: '2FA успешно отключен',
+    };
+  }
+
+  @Post('2fa/regenerate-codes')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async regenerate2faCodes(@CurrentUser('id') userId: number) {
+    const codes = await this.authService.regenerate2faCodes(userId);
+
+    return {
+      success: true,
+      message: 'Новые резервные коды сгенерированы',
+      data: {
+        backupCodes: codes,
+      },
+    };
+  }
+
+  @Get('2fa/status')
+  @UseGuards(JwtAuthGuard)
+  async get2faStatus(@CurrentUser('id') userId: number) {
+    const status = await this.authService.get2faStatus(userId);
+
+    return {
+      success: true,
+      data: status,
+    };
+  }
+
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refreshTokens(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response
-  ) {
-    const refreshToken = req.cookies['refresh_token'];
+  async refreshTokens(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return {
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Refresh токен не найден'
-      };
+      throw new UnauthorizedException('Refresh token not found');
     }
 
-    return this.authService.refreshTokens(refreshToken, res, req);
-  }
-
-  /**
-   * ПОЛУЧЕНИЕ ИНФОРМАЦИИ О ТЕКУЩЕМ ПОЛЬЗОВАТЕЛЕ
-   * GET /auth/me
-   */
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  @HttpCode(HttpStatus.OK)
-  async getMe(@Req() req: Request) {
-    return this.authService.getMe(req);
-  }
-
-  /**
-   * ВКЛЮЧЕНИЕ 2FA И ГЕНЕРАЦИЯ BACKUP КОДОВ
-   * POST /auth/2fa/setup
-   */
-  @UseGuards(JwtAuthGuard)
-  @Post('2fa/setup')
-  @HttpCode(HttpStatus.OK)
-  async setupTwoFactor(
-    @User('id') userId: number
-  ) {
-    return this.authService.setTwoFactorBackupCode(userId);
-  }
-
-  /**
-   * ПРОВЕРКА 2FA КОДА ПРИ ВХОДЕ
-   * POST /auth/2fa/verify
-   */
-  @UseGuards(JwtAuthGuard)
-  @Post('2fa/verify')
-  @HttpCode(HttpStatus.OK)
-  async verifyTwoFactor(
-    @User('id') userId: number,
-    @Body('code') code: string
-  ) {
-    const isValid = await this.authService.verifyTwoFactorCode(userId, code);
-
-    if (!isValid) {
-      return {
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Неверный код'
-      };
-    }
+    await this.authService.refreshTokens(refreshToken, res);
 
     return {
-      message: 'Код подтвержден',
-      verified: true
+      success: true,
+      message: 'Токены обновлены',
     };
   }
 
-  /**
-   * ОТКЛЮЧЕНИЕ 2FA
-   * POST /auth/2fa/disable
-   */
-  @UseGuards(JwtAuthGuard)
-  @Post('2fa/disable')
+  @Patch('verif/send/:id')
   @HttpCode(HttpStatus.OK)
-  async disableTwoFactor(
-    @User('id') userId: number
+  @UseGuards(JwtAuthGuard)
+  async sendToVerification(@Param('id') id: string) {
+    return await this.usersService.sendAccountToVerification(Number(id))
+  }
+
+  @Post('avatar/upload')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('avatar'))
+  async uploadAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser('id') userId: number
   ) {
-    return this.authService.disableTwoFactor(userId);
-  }
+    const result = await this.minioService.uploadAvatar(userId, file);
 
-  @Get('check')
-  @HttpCode(HttpStatus.OK)
-  async checkAuth(@Req() req: Request) {
-    try {
-      const accessToken = req.cookies['access_token'];
+    await this.usersService.uploadAvatar(result.url, userId)
 
-      if (!accessToken) {
-        return { authenticated: false };
-      }
-
-      const payload = this.authService.jwtService.verify(accessToken);
-      const user = await this.authService.users.findById(payload.sub);
-
-      return {
-        authenticated: true,
-        user: user ? { id: user.id, email: user.email, role: user.role } : null
-      };
-    } catch {
-      return { authenticated: false };
-    }
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('revoke-all')
-  @HttpCode(HttpStatus.OK)
-  async revokeAllTokens(
-    @User('id') userId: number,
-    @Res({ passthrough: true }) res: Response
-  ) {
-    await this.authService.revokeAllUserTokens(userId);
-
-    return {
-      message: 'Все остальные сессии завершены'
-    };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('sessions')
-  @HttpCode(HttpStatus.OK)
-  async getActiveSessions(@User('id') userId: number) {
-    const sessions = await this.authService.prisma.refreshToken.findMany({
-      where: {
-        userId,
-        isRevoked: false
-      },
-      select: {
-        id: true,
-        createdAt: true,
-        expiriesAt: true
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    return { sessions };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Delete('sessions/:sessionId')
-  @HttpCode(HttpStatus.OK)
-  async terminateSession(
-    @User('id') userId: number,
-    @Param('sessionId', ParseIntPipe) sessionId: number
-  ) {
-    const session = await this.authService.prisma.refreshToken.findFirst({
-      where: {
-        id: sessionId,
-        userId
-      }
-    });
-
-    if (!session) {
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Сессия не найдена'
-      };
-    }
-
-    await this.authService.revokeRefreshToken(sessionId);
-
-    return {
-      message: 'Сессия завершена'
-    };
+    return result;
   }
 }
+

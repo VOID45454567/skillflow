@@ -1,22 +1,45 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorators/roles';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { Observable } from "rxjs";
+import { Roles } from "../../prisma/generated/prisma";
+import { Reflector } from "@nestjs/core";
+import { ROLES_KEY } from "@/decorators/roles.decorator";
+import { AuthGuard } from "@nestjs/passport";
 
 @Injectable()
-export class RolesGuard implements CanActivate {
-    constructor(private reflector: Reflector) { }
+export class JwtRolesGuard extends AuthGuard('jwt') {
+    constructor(private reflector: Reflector) {
+        super();
+    }
 
-    canActivate(context: ExecutionContext): boolean {
-        const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const isJwtValid = (await super.canActivate(context)) as boolean;
+
+        if (!isJwtValid) {
+            return false;
+        }
+
+        const requiredRoles = this.reflector.getAllAndOverride<Roles[]>(ROLES_KEY, [
             context.getHandler(),
             context.getClass(),
         ]);
 
         if (!requiredRoles) {
-            return true; // Роли не требуются
+            return true;
         }
 
-        const { user } = context.switchToHttp().getRequest();
-        return requiredRoles.includes(user?.role);
+        const request = context.switchToHttp().getRequest();
+        const user = request.user;
+
+        if (!user) {
+            throw new UnauthorizedException('Пользователь не авторизован');
+        }
+
+        const hasRequiredRole = requiredRoles.some((role) => user.role === role);
+
+        if (!hasRequiredRole) {
+            throw new UnauthorizedException('Недостаточно прав для выполнения действия');
+        }
+
+        return true;
     }
 }

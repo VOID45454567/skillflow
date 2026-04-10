@@ -1,49 +1,57 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { CoursesService } from './courses.service';
-import { JwtAuthGuard } from 'src/guards/jwt.auth.guard';
 import { CreateCourseDto } from './dto/create.course.dto';
-import { User } from 'src/decorators/User';
+import { CurrentUser } from '@/decorators/current.user.decrator';
+import { JwtAuthGuard } from '@/guards/jwt.auth.guard';
 
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) { }
 
-  @Post('')
+
+  @Get()
+  async getAll() {
+    return await this.coursesService.getAll()
+  }
+
+
+
+  @Get('/my')
   @UseGuards(JwtAuthGuard)
-  async create(@Body() dto: CreateCourseDto, @User('id') userId: number) {
-    return await this.coursesService.create(dto, userId)
+  async getMy(@CurrentUser('id') id: string) {
+    return await this.coursesService.getMy(Number(id))
   }
 
-  @Patch('/:id/send-to-verif')
-  async sendToVerification(@Param('id') id: string) {
-    return this.coursesService.sendCourseToVerification(+id)
-  }
 
-  @Patch('/:id/make-paid')
-  async makeCoursePaid(@Param('id') id: string, @Body('price') price: string) {
-    return this.coursesService.makeItPaid(+id, +price)
-  }
-
-  @Get('')
-  async getPublished() {
-    return await this.coursesService.getPublishedCourses()
-  }
-
+  @Post()
   @UseGuards(JwtAuthGuard)
-  @Patch('/:id/publish')
-  async publishCourse(@Param('id') id: string) {
-    return await this.coursesService.publish(+id)
+  async create(@Body() dto: CreateCourseDto, @CurrentUser('id') userId: number) {
+    return await this.coursesService.createCourse(dto, userId)
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('/:id/purchase')
-  async buyCourse(@Param('id') courseId: string, @User('userId') userId: string) {
-    return await this.coursesService.buyCourse(+userId, +courseId)
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  async getById(@Param('id') id: string) {
+    return await this.coursesService.getById(Number(id))
   }
 
+  @Patch(':id/make-paid')
   @UseGuards(JwtAuthGuard)
-  @Get('/my/purchased')
-  async getMyPurchased(@User('userId') id: string) {
-    return await this.coursesService.getMyPurchasedCourses(+id)
+  async makeCoursePaid(@Param('id') id: string, @CurrentUser('id') userId: string, @Body('price') price: string) {
+    const course = await this.coursesService.getById(Number(id))
+    console.log(course?.userId);
+    console.log(userId);
+
+    if (course?.userId === Number(userId)) {
+      return await this.coursesService.makeCoursePaid(Number(id), Number(price))
+    }
+
+    return new UnauthorizedException('Ты не владелец')
+  }
+
+  @Post(':id/buy')
+  @UseGuards(JwtAuthGuard)
+  async buyCourse(@Param('id') courseId: string, @CurrentUser('id') userId: string) {
+    return await this.coursesService.buyCourse(Number(userId), Number(courseId))
   }
 }

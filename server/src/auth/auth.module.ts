@@ -1,17 +1,30 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConfig } from 'src/conf/jwt.config';
-import { UsersService } from 'src/users/users.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { ConfigService } from '@nestjs/config';
+import { getJwtConfig } from '@/conf/jwt';
+import { PrismaModule } from '@/prisma/prisma.module';
+import { JwtStrategy } from '@/strategies/passport.jwt.strategy';
+import { UsersModule } from '@/users/users.module';
+import { UsersService } from '@/users/users.service';
+import { JwtAuthGuard } from '@/guards/jwt.auth.guard';
+import { Client } from 'minio';
+import { MinioService } from '@/minio/minio.service';
 
 @Module({
-  imports: [
-    JwtModule.register(jwtConfig)
-  ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, JwtStrategy],
-  exports: [AuthService]
+  providers: [AuthService, JwtStrategy, UsersService, JwtAuthGuard, MinioService],
+  imports: [
+    PrismaModule,
+    UsersModule,
+    PassportModule,
+    JwtModule.registerAsync({
+      useFactory: getJwtConfig,
+      inject: [ConfigService]
+    })
+  ],
+  exports: [JwtAuthGuard, AuthService]
 })
 export class AuthModule { }
