@@ -144,24 +144,17 @@ exports.Prisma.CourseScalarFieldEnum = {
   isFree: 'isFree',
   price: 'price',
   visibility: 'visibility',
+  level: 'level',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   organizationId: 'organizationId'
 };
 
-exports.Prisma.CourseModuleScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  description: 'description',
-  courseId: 'courseId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.LessonScalarFieldEnum = {
   id: 'id',
   title: 'title',
-  courseModuleId: 'courseModuleId',
+  courseId: 'courseId',
+  requredTime: 'requredTime',
   order: 'order',
   goals: 'goals',
   content: 'content',
@@ -200,6 +193,7 @@ exports.Prisma.RefreshTokenScalarFieldEnum = {
 exports.Prisma.PaymentScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  method: 'method',
   count: 'count',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -208,8 +202,10 @@ exports.Prisma.PaymentScalarFieldEnum = {
 exports.Prisma.TransactionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  type: 'type',
   price: 'price',
   courseId: 'courseId',
+  giftToId: 'giftToId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -276,7 +272,6 @@ exports.Prisma.AdminActionsScalarFieldEnum = {
 exports.Prisma.UserCourseProgressScalarFieldEnum = {
   id: 'id',
   completedLessons: 'completedLessons',
-  completedModules: 'completedModules',
   progress: 'progress',
   totalLessons: 'totalLessons',
   completedLessonsCount: 'completedLessonsCount',
@@ -284,7 +279,6 @@ exports.Prisma.UserCourseProgressScalarFieldEnum = {
   lastActivityAt: 'lastActivityAt',
   completedAt: 'completedAt',
   userId: 'userId',
-  currentModuleId: 'currentModuleId',
   currentLessonId: 'currentLessonId',
   courseId: 'courseId'
 };
@@ -299,9 +293,9 @@ exports.Prisma.ReviewScalarFieldEnum = {
 };
 
 exports.Prisma.PurchasedCourseScalarFieldEnum = {
-  id: 'id',
+  userId: 'userId',
   courseId: 'courseId',
-  userId: 'userId'
+  purchasedAt: 'purchasedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -347,7 +341,26 @@ exports.UserVerificationStatuses = exports.$Enums.UserVerificationStatuses = {
 
 exports.VisibilityTypes = exports.$Enums.VisibilityTypes = {
   ORGANIZATION: 'ORGANIZATION',
-  COMMON: 'COMMON'
+  PUBLISHED: 'PUBLISHED',
+  DRAFT: 'DRAFT'
+};
+
+exports.CourseLevels = exports.$Enums.CourseLevels = {
+  BEGINNER: 'BEGINNER',
+  INTERMEDIATE: 'INTERMEDIATE',
+  ADVANCED: 'ADVANCED',
+  PROFESSIONAL: 'PROFESSIONAL'
+};
+
+exports.PaymentMethod = exports.$Enums.PaymentMethod = {
+  CARD: 'CARD',
+  SBP: 'SBP'
+};
+
+exports.TransactionType = exports.$Enums.TransactionType = {
+  PURCHASE: 'PURCHASE',
+  REFUND: 'REFUND',
+  GIFT: 'GIFT'
 };
 
 exports.TermTypes = exports.$Enums.TermTypes = {
@@ -365,7 +378,6 @@ exports.ActionsTypes = exports.$Enums.ActionsTypes = {
 exports.Prisma.ModelName = {
   User: 'User',
   Course: 'Course',
-  CourseModule: 'CourseModule',
   Lesson: 'Lesson',
   BlockInfo: 'BlockInfo',
   TwoVerificationCode: 'TwoVerificationCode',

@@ -12,10 +12,12 @@ import { UsersService } from '@/users/users.service';
 import { JwtAuthGuard } from '@/guards/jwt.auth.guard';
 import { Client } from 'minio';
 import { MinioService } from '@/minio/minio.service';
+import { AdminService } from '@/admin/admin.service';
+import { AdminActionsService } from '@/admin-actions/admin-actions.service';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, UsersService, JwtAuthGuard, MinioService],
+  providers: [AuthService, JwtStrategy, UsersService, JwtAuthGuard, MinioService, AdminService, AdminActionsService],
   imports: [
     PrismaModule,
     UsersModule,

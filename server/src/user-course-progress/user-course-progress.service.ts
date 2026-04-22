@@ -13,13 +13,8 @@ export class UserCourseProgressService {
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
             include: {
-                modules: {
-                    include: {
-                        lessons: {
-                            orderBy: { order: 'asc' }
-                        }
-                    },
-                    orderBy: { id: 'asc' }
+                lessons: {
+                    orderBy: { order: 'asc' }
                 }
             }
         });
@@ -43,32 +38,22 @@ export class UserCourseProgressService {
             return existingProgress;
         }
 
-        const firstModule = course.modules[0];
-        if (!firstModule) {
-            throw new BadRequestException({ message: 'Курс не содержит модулей' });
+        if (!course.lessons || course.lessons.length === 0) {
+            throw new BadRequestException({ message: 'Курс не содержит уроков' });
         }
 
-        const firstLesson = firstModule.lessons[0];
-        if (!firstLesson) {
-            throw new BadRequestException({ message: 'Модуль не содержит уроков' });
-        }
-
-        const totalLessons = course.modules.reduce(
-            (acc, module) => acc + module.lessons.length,
-            0
-        );
+        const firstLesson = course.lessons[0];
+        const totalLessons = course.lessons.length;
 
         const progress = await this.prisma.userCourseProgress.create({
             data: {
                 user: { connect: { id: userId } },
                 goal: { connect: { id: courseId } },
-                currentModule: { connect: { id: firstModule.id } },
                 currentLesson: { connect: { id: firstLesson.id } },
                 totalLessons,
                 completedLessonsCount: 0,
                 progress: 0,
-                completedLessons: JSON.stringify([]),
-                completedModules: JSON.stringify([])
+                completedLessons: JSON.stringify([])
             }
         });
 
@@ -79,9 +64,8 @@ export class UserCourseProgressService {
         const lesson = await this.prisma.lesson.findUnique({
             where: { id: lessonId },
             include: {
-                courseModule: {
+                course: {
                     include: {
-                        course: true,
                         lessons: {
                             orderBy: { order: 'asc' }
                         }
@@ -94,12 +78,11 @@ export class UserCourseProgressService {
             throw new NotFoundException({ message: 'Урок не найден' });
         }
 
-        const module = lesson.courseModule;
-        if (!module || !module.course) {
+        if (!lesson.course) {
             throw new BadRequestException({ message: 'Урок не привязан к курсу' });
         }
 
-        const courseId = module.course.id;
+        const courseId = lesson.course.id;
 
         let progress = await this.prisma.userCourseProgress.findUnique({
             where: {
@@ -123,7 +106,7 @@ export class UserCourseProgressService {
         }
 
         const isCurrentLesson = progress.currentLessonId === lessonId;
-        const isPreviousLesson = this.isPreviousLesson(module.lessons, lessonId, progress.currentLessonId);
+        const isPreviousLesson = this.isPreviousLesson(lesson.course.lessons, lessonId, progress.currentLessonId);
 
         if (!isCurrentLesson && !isPreviousLesson) {
             throw new BadRequestException({
@@ -136,7 +119,7 @@ export class UserCourseProgressService {
 
         const newProgress = (completedLessonsCount / progress.totalLessons) * 100;
 
-        const nextLesson = this.findNextLesson(module, lesson, progress);
+        const nextLesson = this.findNextLesson(lesson.course.lessons, lesson);
 
         const updatedProgress = await this.prisma.userCourseProgress.update({
             where: { id: progress.id },
@@ -145,9 +128,6 @@ export class UserCourseProgressService {
                 completedLessonsCount,
                 progress: newProgress,
                 currentLesson: nextLesson ? { connect: { id: nextLesson.id } } : undefined,
-                currentModule: nextLesson?.courseModuleId !== progress.currentModuleId && nextLesson
-                    ? { connect: { id: nextLesson.courseModuleId! } }
-                    : undefined,
                 lastActivityAt: new Date(),
                 ...(completedLessonsCount === progress.totalLessons && {
                     completedAt: new Date()
@@ -159,86 +139,7 @@ export class UserCourseProgressService {
             await this.completeCourse(courseId, userId);
         }
 
-
-
-        return updatedProgress;
-    }
-
-    async completeModule(moduleId: number, userId: number) {
-        const module = await this.prisma.courseModule.findUnique({
-            where: { id: moduleId },
-            include: {
-                course: true,
-                lessons: {
-                    orderBy: { order: 'asc' }
-                }
-            }
-        });
-
-        if (!module || !module.course) {
-            throw new NotFoundException({ message: 'Модуль не найден' });
-        }
-
-        let progress = await this.prisma.userCourseProgress.findUnique({
-            where: {
-                userId_courseId: {
-                    userId,
-                    courseId: module.course.id
-                }
-            }
-        });
-
-        if (!progress) {
-            progress = await this.startCourse(module.course.id, userId);
-        }
-
-        const completedModules = this.parseJsonArray(progress.completedModules);
-        if (completedModules.includes(moduleId)) {
-            return {
-                ...progress,
-                message: 'Модуль уже был завершен ранее'
-            };
-        }
-
-        const completedLessons = this.parseJsonArray(progress.completedLessons);
-        let newLessonsCompleted = 0;
-
-        for (const lesson of module.lessons) {
-            if (!completedLessons.includes(lesson.id)) {
-                completedLessons.push(lesson.id);
-                newLessonsCompleted++;
-            }
-        }
-
-        completedModules.push(moduleId);
-
-        const completedLessonsCount = completedLessons.length;
-        const newProgress = (completedLessonsCount / progress.totalLessons) * 100;
-
-        const nextModule = await this.findNextModule(module.course.id, moduleId);
-        const nextLesson = nextModule ? nextModule.lessons[0] : null;
-
-        const updatedProgress = await this.prisma.userCourseProgress.update({
-            where: { id: progress.id },
-            data: {
-                completedLessons: JSON.stringify(completedLessons),
-                completedModules: JSON.stringify(completedModules),
-                completedLessonsCount,
-                progress: newProgress,
-                currentModule: nextModule ? { connect: { id: nextModule.id } } : undefined,
-                currentLesson: nextLesson ? { connect: { id: nextLesson.id } } : undefined,
-                lastActivityAt: new Date(),
-                ...(completedLessonsCount === progress.totalLessons && {
-                    completedAt: new Date()
-                })
-            }
-        });
-
-        if (completedLessonsCount === progress.totalLessons) {
-            await this.completeCourse(module.course.id, userId);
-        }
-
-        await this.heatmap.incrementActivity(userId)
+        await this.heatmap.incrementActivity(userId);
 
         return updatedProgress;
     }
@@ -254,11 +155,7 @@ export class UserCourseProgressService {
             include: {
                 goal: {
                     include: {
-                        modules: {
-                            include: {
-                                lessons: true
-                            }
-                        }
+                        lessons: true
                     }
                 }
             }
@@ -268,10 +165,7 @@ export class UserCourseProgressService {
             throw new NotFoundException({ message: 'Прогресс по курсу не найден' });
         }
 
-        const totalLessons = progress.goal.modules.reduce(
-            (acc, module) => acc + module.lessons.length,
-            0
-        );
+        const totalLessons = progress.goal.lessons.length;
 
         if (progress.completedLessonsCount < totalLessons) {
             throw new BadRequestException({
@@ -288,7 +182,7 @@ export class UserCourseProgressService {
                 completedAt: new Date()
             }
         });
-
+        await this.heatmap.incrementActivity(userId)
         return {
             ...updatedProgress,
             message: 'Курс успешно завершен!'
@@ -304,17 +198,11 @@ export class UserCourseProgressService {
                 }
             },
             include: {
-                currentModule: true,
                 currentLesson: true,
                 goal: {
                     include: {
-                        modules: {
-                            include: {
-                                lessons: {
-                                    orderBy: { order: 'asc' }
-                                }
-                            },
-                            orderBy: { id: 'asc' }
+                        lessons: {
+                            orderBy: { order: 'asc' }
                         }
                     }
                 }
@@ -326,20 +214,14 @@ export class UserCourseProgressService {
         }
 
         const completedLessons = this.parseJsonArray(progress.completedLessons);
-        const completedModules = this.parseJsonArray(progress.completedModules);
 
         const enrichedProgress = {
             ...progress,
             completedLessonsList: completedLessons,
-            completedModulesList: completedModules,
-            modules: progress.goal.modules.map(module => ({
-                ...module,
-                isCompleted: completedModules.includes(module.id),
-                lessons: module.lessons.map(lesson => ({
-                    ...lesson,
-                    isCompleted: completedLessons.includes(lesson.id),
-                    isCurrent: progress.currentLessonId === lesson.id
-                }))
+            lessons: progress.goal.lessons.map(lesson => ({
+                ...lesson,
+                isCompleted: completedLessons.includes(lesson.id),
+                isCurrent: progress.currentLessonId === lesson.id
             }))
         };
 
@@ -355,12 +237,6 @@ export class UserCourseProgressService {
                         id: true,
                         title: true,
                         description: true
-                    }
-                },
-                currentModule: {
-                    select: {
-                        id: true,
-                        title: true
                     }
                 },
                 currentLesson: {
@@ -452,32 +328,11 @@ export class UserCourseProgressService {
         return lessonIndex < currentIndex;
     }
 
-    private findNextLesson(currentModule: any, currentLesson: any, progress: any) {
-        const lessons = currentModule.lessons;
+    private findNextLesson(lessons: any[], currentLesson: any) {
         const currentIndex = lessons.findIndex((l: any) => l.id === currentLesson.id);
 
         if (currentIndex < lessons.length - 1) {
             return lessons[currentIndex + 1];
-        }
-
-        return null;
-    }
-
-    private async findNextModule(courseId: number, currentModuleId: number) {
-        const modules = await this.prisma.courseModule.findMany({
-            where: { courseId },
-            include: {
-                lessons: {
-                    orderBy: { order: 'asc' }
-                }
-            },
-            orderBy: { id: 'asc' }
-        });
-
-        const currentIndex = modules.findIndex(m => m.id === currentModuleId);
-
-        if (currentIndex < modules.length - 1) {
-            return modules[currentIndex + 1];
         }
 
         return null;

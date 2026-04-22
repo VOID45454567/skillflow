@@ -1,0 +1,16 @@
+export const adminEndpoints = {
+    getAllUsers: "/admin/users/all",
+    getUsersOnVerification: "/admin/users-verif-pending",
+    getAllTransactions: "/admin/transactions/all",
+    getAllPayments: "/admin/payments/all",
+    getAllTerms: "/admin/terms/all",
+    getLogs: "/admin/logs",
+    blockUser: (id: number) => `/admin/block-user/${id}`,
+    unblockUser: (id: number) => `/admin/unblock-user/${id}`,
+    setVerificationStatus: (id: number) => `/admin/user-verification/set/${id}`,
+    getUserPayments: (id: number) => `/admin/payments/${id}`,
+    getUserTransactions: (id: number) => `/admin/transactions/${id}`,
+    getAppeals: "/admin/appeals",
+    getAppeal: (id: number) => `/admin/appeals/${id}`,
+    getAppealByUserId: (userId: number) => `/admin/appeals/user/${userId}`,
+}

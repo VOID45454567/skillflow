@@ -42,13 +42,11 @@ export class AuthController {
     return {
       success: true,
       message: 'Регистрация успешна',
-      data: {
-        user: {
-          id: result.id,
-          email: result.email,
-          login: result.login,
-          role: result.role,
-        },
+      user: {
+        id: result.id,
+        email: result.email,
+        login: result.login,
+        role: result.role,
       },
     };
   }
@@ -72,14 +70,7 @@ export class AuthController {
     return {
       success: true,
       message: 'Вход выполнен успешно',
-      data: {
-        user: {
-          id: userResult.id,
-          email: userResult.email,
-          login: userResult.login,
-          role: userResult.role,
-        },
-      },
+      user: userResult
     };
   }
 
@@ -107,6 +98,12 @@ export class AuthController {
     };
   }
 
+  @Post('2fa/send-code')
+  @HttpCode(HttpStatus.OK)
+  async sendVerificationCode(@Body('userId') userId: number) {
+    return await this.authService.sendVerificationCode(userId)
+  }
+
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
@@ -120,21 +117,8 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getMe(@CurrentUser() user: any) {
-    return {
-      success: true,
-      data: {
-        user: {
-          id: user.id,
-          email: user.email,
-          login: user.login,
-          role: user.role,
-          avatarUrl: user.avatarUrl,
-          enabledTwoFactor: user.enabledTwoFactor,
-          createdAt: user.createdAt,
-        },
-      },
-    };
+  async getMe(@CurrentUser('id') id: number) {
+    return this.usersService.findById(id)
   }
 
   @Post('2fa/enable')
@@ -196,11 +180,14 @@ export class AuthController {
   async refreshTokens(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refreshToken;
 
+
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token not found');
     }
 
     await this.authService.refreshTokens(refreshToken, res);
+
+    console.log('токены обновленны');
 
     return {
       success: true,
@@ -228,5 +215,16 @@ export class AuthController {
 
     return result;
   }
+
+  @Delete('avatar/remove')
+  @UseGuards(JwtAuthGuard)
+  async removeAvatar(
+    @CurrentUser('id') userId: number,
+    @Body('filename') filename: string
+  ) {
+    return await this.minioService.deleteFile(filename)
+  }
+
+
 }
 

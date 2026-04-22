@@ -1,0 +1,33 @@
+:root {
+  /* Primary Colors */
+  --color-primary: #6366f1;
+  --color-primary-dark: rgb(79, 70, 229);
+  --color-primary-light: #818cf8;
+
+  /* Accent Colors */
+  --color-accent: #a78bfa;
+  --color-accent-pink: #f472b6;
+  --color-accent-cyan: #67e8f9;
+
+  /* Surface Colors */
+  --color-surface: rgba(255, 255, 255, 0.75);
+  --color-surface-hover: rgba(255, 255, 255, 0.9);
+  --color-surface-strong: rgba(255, 255, 255, 0.85);
+
+  /* Text Colors */
+  --color-text-primary: #1e1e2e;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
+
+  /* Background */
+  --color-bg-primary: #f0f0f7;
+
+  /* Border */
+  --color-border-light: rgba(255, 255, 255, 0.5);
+  --color-border: rgba(255, 255, 255, 0.3);
+
+  /* Shadows */
+  --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 20px rgba(99, 102, 241, 0.3);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1);
+}

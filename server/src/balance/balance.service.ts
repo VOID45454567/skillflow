@@ -1,5 +1,6 @@
 import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { UpBalanceDto } from './dto/up.balance.dto';
 
 @Injectable()
 export class BalanceService {
@@ -7,12 +8,12 @@ export class BalanceService {
         private readonly prisma: PrismaService
     ) { }
 
-    async deposit(userId: number, count: number) {
+    async deposit(dto: UpBalanceDto) {
         return await this.prisma.$transaction([
             this.prisma.payment.create({
-                data: { count, userId }
+                data: dto
             }),
-            this.prisma.user.update({ where: { id: userId }, data: { balance: { increment: count } } })
+            this.prisma.user.update({ where: { id: dto.userId }, data: { balance: { increment: dto.count } } })
         ])
     }
 }

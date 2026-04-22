@@ -4,6 +4,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ActionsTypes, UserVerificationStatuses } from '../../prisma/generated/prisma';
 import { AdminActionsService } from '@/admin-actions/admin-actions.service';
 import { SetVerificationStatusDto } from './dto/set.verification.status.dto';
+import { CreateTermDto } from '@/terms/dto/create.term.dto';
 
 @Injectable()
 export class AdminService {
@@ -11,6 +12,37 @@ export class AdminService {
         private readonly prisma: PrismaService,
         private readonly adminActions: AdminActionsService
     ) { }
+
+    async getAllUsers() {
+        return await this.prisma.user.findMany(
+            {
+                include:
+                {
+                    bannedByUsers:
+                    {
+                        include:
+                        {
+                            bannedByUser:
+                            {
+                                select:
+                                {
+                                    login: true
+                                }
+                            }
+                        }
+                    },
+                    _count: true,
+                    transactions: {
+                        select: { course: true, type: true, price: true, }
+                    },
+                    courses: true
+                }
+            })
+    }
+
+    async getLogs() {
+        return await this.adminActions.getAll()
+    }
 
     async blockUser(bannedId: number, bannedBy: number, reason: string) {
         const newBlock = await this.prisma.blockInfo.create({
@@ -48,12 +80,17 @@ export class AdminService {
 
         const adminAction = await this.adminActions.create({ actionType: 'UNBAN', reason: reason, targetUser: bannedId }, unbannedBy)
 
-        return Promise.all([unblock, adminAction])
+        const removeAppeals = await this.prisma.appeal.deleteMany({
+            where: {
+                userId: bannedId
+            }
+        });
+        return Promise.all([unblock, adminAction, removeAppeals])
 
     }
 
     async getTransactions() {
-        return await this.prisma.transaction.findMany()
+        return await this.prisma.transaction.findMany({ include: { user: true, course: true } })
     }
 
     async getTagsAndCategories() {
@@ -61,7 +98,7 @@ export class AdminService {
     }
 
     async getPayments() {
-        return await this.prisma.payment.findMany()
+        return await this.prisma.payment.findMany({ include: { user: true } })
     }
 
     async getUserTransactions(userId: number) {
@@ -77,14 +114,19 @@ export class AdminService {
     }
 
     async getAppeals() {
-        return await this.prisma.appeal.findMany()
+        return await this.prisma.appeal.findMany({ include: { user: { select: { id: true, login: true, avatarUrl: true } } } })
     }
 
     async getOneAppeal(id: number) {
         return await this.prisma.appeal.findUnique({ where: { id } })
     }
 
+
     async getAppealByUserId(userId: number) {
         return await this.prisma.appeal.findFirst({ where: { userId: userId } })
+    }
+
+    async createTerm(dto: CreateTermDto) {
+        return await this.prisma.term.create({ data: dto })
     }
 }

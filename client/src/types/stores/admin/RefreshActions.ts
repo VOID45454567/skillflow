@@ -1,0 +1,1 @@
+export type RefreshActions = 'users' | 'payments' | 'terms' | 'transactions' | 'logs'

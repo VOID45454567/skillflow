@@ -1,8 +1,9 @@
 
 import { IsString, IsBoolean, IsOptional, IsInt, Min, Max, IsArray, ValidateNested, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateCourseModuleDto } from './create.module.dto';
 import { VisibilityTypes } from '../../../prisma/generated/prisma';
+import { CreateLessonDto } from './create.lesson.dto';
+import { CourseLevels } from '../../../prisma/generated/prisma';
 
 export class CreateCourseDto {
     @IsString({ message: 'Название должно быть строкой' })
@@ -15,6 +16,9 @@ export class CreateCourseDto {
     @IsOptional()
     isFree?: boolean = true;
 
+    @IsEnum(CourseLevels)
+    level: CourseLevels
+
     @IsInt({ message: 'Цена должна быть числом' })
     @Min(0, { message: 'Цена не может быть отрицательной' })
     @Max(100000, { message: 'Цена не может превышать 100000' })
@@ -25,17 +29,17 @@ export class CreateCourseDto {
     @IsInt({ each: true })
     termIds: number[];
 
-    @IsArray({ message: 'Модули должны быть массивом' })
+    @IsArray({ message: 'Уроки должны быть массивом' })
     @ValidateNested({ each: true })
-    @Type(() => CreateCourseModuleDto)
+    @Type(() => CreateLessonDto)
     @IsOptional()
-    modules?: CreateCourseModuleDto[];
+    lessons?: CreateLessonDto[];
 
     @IsEnum(VisibilityTypes, { message: 'Может быть общим либо от организации' })
     visibility: VisibilityTypes
 
 
-    @IsInt({ message: 'ID организации обязательно' })
+    @IsInt({ message: 'ID организации' })
     @IsOptional()
     orgId: number
 }

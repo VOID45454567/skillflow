@@ -8,7 +8,7 @@ export class TransactionService {
         private readonly prisma: PrismaService
     ) { }
 
-    async create({ courseId, userId }: CreateTransactionDto) {
+    async create({ courseId, userId, type }: CreateTransactionDto) {
 
         const course = await this.prisma.course.findUnique({ where: { id: courseId } })
 
@@ -16,7 +16,8 @@ export class TransactionService {
             data: {
                 courseId,
                 userId,
-                price: course?.price!
+                price: course?.price!,
+                type
             }
         })
     }
@@ -25,7 +26,7 @@ export class TransactionService {
         return await this.prisma.transaction.findMany()
     }
 
-    async getAllUserTransActtions(id: number) {
+    async getAllUserTransActions(id: number) {
         return this.prisma.transaction.findMany({ where: { userId: id } })
     }
 }

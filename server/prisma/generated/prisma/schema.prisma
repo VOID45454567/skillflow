@@ -22,12 +22,24 @@ enum UserVerificationStatuses {
 
 enum VisibilityTypes {
   ORGANIZATION
-  COMMON
+  PUBLISHED
+  DRAFT
 }
 
 enum Roles {
   ADMIN
   USER
+}
+
+enum PaymentMethod {
+  CARD
+  SBP
+}
+
+enum TransactionType {
+  PURCHASE
+  REFUND
+  GIFT
 }
 
 enum ActionsTypes {
@@ -74,10 +86,11 @@ model User {
   twoVerificationCodes TwoVerificationCode[]
   refreshTokens        RefreshToken[]
   payments             Payment[]
-  transactions         Transaction[]
+  transactions         Transaction[]         @relation("UserTransactions")
+  receivedGifts        Transaction[]         @relation("GiftTransactions")
   organizations        Organization[]
   organizationMembers  OrganizationMember[]
-  heatmapDatas         HeatmapData?
+  heatmapDatas         HeatmapData[]
   appeals              Appeal[]
   adminActions         AdminActions[]
   userCourseProgresses UserCourseProgress[]
@@ -93,10 +106,11 @@ model Course {
   description String
   user        User            @relation(fields: [userId], references: [id])
   userId      Int
-  modules     CourseModule[]
+  lessons     Lesson[]
   isFree      Boolean         @default(true)
   price       Int?
   visibility  VisibilityTypes
+  level       CourseLevels
 
   createdAt            DateTime             @default(now()) @map("created_at")
   updatedAt            DateTime             @updatedAt @map("updated_at")
@@ -111,27 +125,14 @@ model Course {
   @@map("courses")
 }
 
-model CourseModule {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  course      Course?  @relation(fields: [courseId], references: [id])
-  courseId    Int?
-  lessons     Lesson[]
-
-  createdAt            DateTime             @default(now()) @map("created_at")
-  updatedAt            DateTime             @updatedAt @map("updated_at")
-  userCourseProgresses UserCourseProgress[]
-
-  @@map("course_modules")
-}
-
 model Lesson {
   id    Int    @id @default(autoincrement())
   title String
 
-  courseModule   CourseModule? @relation(fields: [courseModuleId], references: [id])
-  courseModuleId Int?
+  course   Course? @relation(fields: [courseId], references: [id])
+  courseId Int?
+
+  requredTime Int?
 
   order Int @default(0)
 
@@ -191,9 +192,10 @@ model RefreshToken {
 }
 
 model Payment {
-  id     Int   @id @default(autoincrement())
-  user   User? @relation(fields: [userId], references: [id])
+  id     Int           @id @default(autoincrement())
+  user   User?         @relation(fields: [userId], references: [id])
   userId Int?
+  method PaymentMethod
 
   count Int
 
@@ -202,14 +204,17 @@ model Payment {
 }
 
 model Transaction {
-  id     Int   @id @default(autoincrement())
-  user   User? @relation(fields: [userId], references: [id])
-  userId Int?
+  id     Int  @id @default(autoincrement())
+  user   User @relation("UserTransactions", fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
 
-  course Course? @relation(fields: [courseId], references: [id])
-
+  course   Course?         @relation(fields: [courseId], references: [id])
+  type     TransactionType
   price    Int?
   courseId Int?
+
+  giftTo   User? @relation("GiftTransactions", fields: [giftToId], references: [id], onDelete: SetNull)
+  giftToId Int?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -250,13 +255,13 @@ model OrganizationMember {
 
 model HeatmapData {
   id           Int      @id @default(autoincrement())
-  userId       Int      @unique
+  userId       Int
   user         User     @relation(fields: [userId], references: [id])
-  date         DateTime @default(now())
+  date         DateTime
   actionsCount Int      @default(0)
 
-  @@unique([userId, date])
-  @@index([userId, date])
+  @@unique([userId, date]) // Уникальная комбинация пользователь + дата
+  @@index([userId, date]) // Индекс для быстрого поиска
 }
 
 model Term {
@@ -285,16 +290,16 @@ model CourseTerm {
 model Appeal {
   id Int @id @default(autoincrement())
 
-  user User @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   text String
 
-  banInfo   BlockInfo @relation(fields: [banInfoId], references: [id])
-  banInfoId Int       @unique
+  banInfo   BlockInfo? @relation(fields: [banInfoId], references: [id])
+  banInfoId Int?       @unique
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  userId    Int
+  userId    Int?
 }
 
 model AdminActions {
@@ -315,11 +320,9 @@ model UserCourseProgress {
   user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   goal Course @relation(fields: [courseId], references: [id])
 
-  currentModule CourseModule @relation(fields: [currentModuleId], references: [id])
-  currentLesson Lesson       @relation(fields: [currentLessonId], references: [id])
+  currentLesson Lesson @relation(fields: [currentLessonId], references: [id])
 
   completedLessons Json?
-  completedModules Json?
   progress         Float @default(0)
 
   totalLessons          Int @default(0)
@@ -330,7 +333,6 @@ model UserCourseProgress {
   completedAt    DateTime?
 
   userId          Int
-  currentModuleId Int
   currentLessonId Int
   courseId        Int
 
@@ -340,20 +342,22 @@ model UserCourseProgress {
 
 model Review {
   id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  course    Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   text      String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  userId    Int
-  courseId  Int
+  userId    Int?
+  courseId  Int?
 }
 
 model PurchasedCourse {
-  id       Int     @id @default(autoincrement())
-  course   Course? @relation(fields: [courseId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int
+  course   Course @relation(fields: [courseId], references: [id])
   courseId Int
 
-  user   User? @relation(fields: [userId], references: [id])
-  userId Int?
+  purchasedAt DateTime @default(now())
+
+  @@id([userId, courseId])
 }

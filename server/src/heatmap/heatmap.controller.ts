@@ -3,5 +3,5 @@ import { HeatmapService } from './heatmap.service';
 
 @Controller('heatmap')
 export class HeatmapController {
-  constructor(private readonly heatmapService: HeatmapService) {}
+  constructor(private readonly heatmapService: HeatmapService) { }
 }

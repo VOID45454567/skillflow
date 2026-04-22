@@ -2,11 +2,14 @@ import { Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Pos
 import { UserCourseProgressService } from './user-course-progress.service';
 import { JwtAuthGuard } from '@/guards/jwt.auth.guard';
 import { CurrentUser } from '@/decorators/current.user.decrator';
+import { CoursesService } from '@/courses/courses.service';
 
 @Controller('user-course-progress')
 @UseGuards(JwtAuthGuard)
 export class UserCourseProgressController {
-  constructor(private readonly userCourseProgressService: UserCourseProgressService) { }
+  constructor(
+    private readonly userCourseProgressService: UserCourseProgressService,
+  ) { }
 
   @Post('courses/:courseId/start')
   @HttpCode(HttpStatus.OK)
@@ -25,16 +28,6 @@ export class UserCourseProgressController {
 
   ) {
     return await this.userCourseProgressService.completeLesson(lessonId, userId);
-  }
-
-  @Post('modules/:moduleId/complete')
-  @HttpCode(HttpStatus.OK)
-  async completeModule(
-    @Param('moduleId', ParseIntPipe) moduleId: number,
-    @CurrentUser('id') userId: number
-
-  ) {
-    return await this.userCourseProgressService.completeModule(moduleId, userId);
   }
 
   @Post('courses/:courseId/complete')
@@ -75,7 +68,7 @@ export class UserCourseProgressController {
     @CurrentUser('id') userId: number
 
   ) {
-    return await this.userCourseProgressService.resetCourseProgress(courseId, userId);
+    await this.userCourseProgressService.resetCourseProgress(courseId, userId);
   }
 
   @Get('courses/:courseId/statistics')

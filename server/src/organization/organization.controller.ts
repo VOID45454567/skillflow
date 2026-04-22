@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Patch, UnauthorizedException, ParseIntPipe, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Patch, UnauthorizedException, ParseIntPipe, UploadedFile, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { JwtAuthGuard } from '@/guards/jwt.auth.guard';
@@ -6,15 +6,18 @@ import { CurrentUser } from '@/decorators/current.user.decrator';
 import { UpdateOrganizationDto } from './dto/update.organization.dto';
 import { InviteCodeDto } from './dto/invite.code.dto';
 import { CreateCourseDto } from '@/courses/dto/create.course.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MinioService } from '@/minio/minio.service';
+import { CoursesService } from '@/courses/courses.service';
+import { CoursesController } from '@/courses/courses.controller';
 
 @UseGuards(JwtAuthGuard)
 @Controller('organization')
 export class OrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,
-    private readonly minioService: MinioService
+    private readonly minioService: MinioService,
+    private readonly coursesController: CoursesController,
   ) { }
 
   @Post()
@@ -22,9 +25,14 @@ export class OrganizationController {
     return await this.organizationService.create(dto, userId)
   }
 
+
+  @UseGuards(JwtAuthGuard)
   @Post('invite')
-  async sendInviteCode(@Body() dto: InviteCodeDto) {
-    return await this.organizationService.sendInviteCode(dto)
+  async sendInviteCode(
+    @Body() dto: InviteCodeDto,
+    @CurrentUser('id') id: number
+  ) {
+    return await this.organizationService.sendInviteCode(dto, id)
   }
 
 
@@ -32,16 +40,49 @@ export class OrganizationController {
   @UseInterceptors(FileInterceptor('logo'))
   async updateLogo(
     @Param('id', ParseIntPipe) orgId: number,
-    @UploadedFile('logo') logo: Express.Multer.File
+    @UploadedFile() logo: Express.Multer.File
   ) {
-    const result = this.minioService.uploadOrganizationLogo(orgId, logo)
-
+    const result = await this.minioService.uploadOrganizationLogo(orgId, logo)
+    await this.organizationService.uploadLogo(result.url, orgId)
     return result
   }
 
+
+  @Post(':id/gallery/upload')
+  @UseInterceptors(FilesInterceptor("files", 10))
+  async uploadGallery(
+    @Param('id', ParseIntPipe) orgId: number,
+    @CurrentUser('id') currentUserId: number,
+    @UploadedFiles() files: Express.Multer.File[]
+  ) {
+    const uploadResult = await this.minioService.uploadOrganizationGallery(orgId, files)
+
+    const filesUrls = uploadResult.map((result) => result.url)
+
+    await this.organizationService.uploadGallery(orgId, filesUrls, currentUserId)
+
+    return uploadResult
+  }
+
+  @Delete(':id/gallery/remove')
+  async removeFromGallery(
+    @Body('filename') fileName: string,
+    @Param('id', ParseIntPipe) orgId: number,
+    @CurrentUser('id') userId: number
+  ) {
+    return await this.organizationService.removeFromGallery(orgId, fileName, userId)
+  }
+
+
   @Post('create-course/:id')
-  async createCourse(@Body() dto: CreateCourseDto, @CurrentUser('id') creatorId: number, @Param('id', ParseIntPipe) orgId: number) {
-    return await this.organizationService.createCourse(dto, creatorId, orgId)
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(AnyFilesInterceptor())
+  async createCourse(
+    @Body('data') data: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @CurrentUser('id') userId: number
+  ) {
+    return await this.coursesController.create(data, files, userId);
   }
 
   @Get()
@@ -49,10 +90,12 @@ export class OrganizationController {
     return await this.organizationService.getAll()
   }
 
+
   @Get(':id')
   async getById(@Param('id') id: string) {
     return await this.organizationService.getById(Number(id))
   }
+
 
   @Patch(':id')
   async update(@Body() dto: UpdateOrganizationDto, @Param('id') id: string, @CurrentUser('id') userId: number) {
@@ -66,13 +109,21 @@ export class OrganizationController {
   }
 
   @Post('/add-member/:orgId')
-  async addMember(@Param('orgId') orgId: string, @Body('userId') userId: string) {
-    return await this.organizationService.addMember(Number(userId), Number(orgId))
+  async addMember(
+    @Param('orgId', ParseIntPipe) orgId: number,
+    @Body('userId', ParseIntPipe) userId: number,
+    @CurrentUser('id', ParseIntPipe) currentUserId: number
+  ) {
+    return await this.organizationService.addMember(userId, orgId, currentUserId)
   }
 
   @Delete('/remove-member/:orgId')
-  async deleteMember(@Param('orgId') orgId: string, @Body('userId') userId: string) {
-    return await this.organizationService.removeMember(Number(userId), Number(orgId))
+  async deleteMember(
+    @Param('orgId', ParseIntPipe) orgId: number,
+    @Body('userId', ParseIntPipe) userId: number,
+    @CurrentUser('id', ParseIntPipe) currentUserId: number
+  ) {
+    return await this.organizationService.removeMember(userId, orgId, currentUserId)
   }
 
 }

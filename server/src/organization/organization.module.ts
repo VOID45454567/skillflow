@@ -7,16 +7,22 @@ import { JwtStrategy } from '@/strategies/passport.jwt.strategy';
 import { JwtAuthGuard } from '@/guards/jwt.auth.guard';
 import { TransactionService } from '@/transaction/transaction.service';
 import { MinioService } from '@/minio/minio.service';
+import { CoursesController } from '@/courses/courses.controller';
+import { UserCourseProgressService } from '@/user-course-progress/user-course-progress.service';
+import { HeatmapService } from '@/heatmap/heatmap.service';
 
 @Module({
-  controllers: [OrganizationController],
+  controllers: [OrganizationController, CoursesController],
   providers: [
     OrganizationService,
     CoursesService,
     JwtStrategy,
     JwtAuthGuard,
     TransactionService,
-    MinioService
+    MinioService,
+    CoursesController,
+    UserCourseProgressService,
+    HeatmapService
   ],
 })
 export class OrganizationModule { }

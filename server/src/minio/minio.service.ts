@@ -170,7 +170,7 @@ export class MinioService implements OnModuleInit {
         }
     }
 
-    async getPresignedUrl(fileName: string, expiry: number = 3600): Promise<string> {
+    async getPresignedUrl(fileName: string, expiry: number = 3600 * 24 * 7): Promise<string> {
         return await this.getClient().presignedGetObject(
             this.bucketName,
             fileName,
@@ -222,9 +222,6 @@ export class MinioService implements OnModuleInit {
         const stat = await this.getClient().statObject(this.bucketName, fileName);
         return stat.size;
     }
-
-
-
 
 
     private validateFile(file: Express.Multer.File, options: UploadOptions) {

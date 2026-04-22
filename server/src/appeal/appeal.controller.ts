@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { AppealService } from './appeal.service';
 import { CurrentUser } from '@/decorators/current.user.decrator';
 import { JwtAuthGuard } from '@/guards/jwt.auth.guard';
@@ -12,9 +12,9 @@ export class AppealController {
   @Post()
   async create(
     @Body('text') text: string,
-    @Body('banInfoId') banInfoId: string,
+    @Body('banInfoId', ParseIntPipe) banInfoId: number,
     @CurrentUser('id') userId: number
   ) {
-    return await this.appealService.create(Number(banInfoId), text, userId)
+    return await this.appealService.create(banInfoId, text, userId)
   }
 }

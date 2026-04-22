@@ -1,16 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ConfigModuleParams } from './conf/config.module';
+import { ConfigModuleParams } from './conf/configModule';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TermsModule } from './terms/terms.module';
-import { LessonsModule } from './lessons/lessons.module';
-import { CourseModulesModule } from './course-modules/course-modules.module';
 import { CoursesModule } from './courses/courses.module';
 import { AdminModule } from './admin/admin.module';
 import { AdminActionsModule } from './admin-actions/admin-actions.module';
 import { BalanceModule } from './balance/balance.module';
-import { PaymentModule } from './payment/payment.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { UserCourseProgressModule } from './user-course-progress/user-course-progress.module';
 import { HeatmapModule } from './heatmap/heatmap.module';
@@ -39,13 +36,10 @@ import { getMinioConfig } from './conf/minio';
     AuthModule,
     UsersModule,
     CoursesModule,
-    CourseModulesModule,
-    LessonsModule,
     TermsModule,
     AdminModule,
     AdminActionsModule,
     BalanceModule,
-    PaymentModule,
     TransactionModule,
     UserCourseProgressModule,
     HeatmapModule,

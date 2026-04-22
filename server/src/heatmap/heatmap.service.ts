@@ -8,12 +8,12 @@ export class HeatmapService {
     ) { }
 
     async create(userId: number) {
-        return await this.prisma.heatmapData.create({ data: { userId } })
+        return await this.prisma.heatmapData.create({ data: { userId, date: new Date() } })
     }
 
     async incrementActivity(userId: number) {
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
         return await this.prisma.heatmapData.upsert({
             where: {
@@ -23,14 +23,16 @@ export class HeatmapService {
                 }
             },
             update: {
-                actionsCount: { increment: 1 }
+                actionsCount: {
+                    increment: 1
+                }
             },
             create: {
-                actionsCount: 0,
+                userId: userId,
                 date: today,
-                userId: userId
+                actionsCount: 1
             }
-        })
+        });
     }
 
     async getByUserId(userId: number, startDate: Date, endDate: Date) {

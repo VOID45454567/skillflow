@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import * as brcypt from 'bcrypt'
 import { ConfigService } from '@nestjs/config';
@@ -44,13 +44,13 @@ export class AuthService {
     async login(dto: LoginDto, res: Response) {
         const existingUser = await this.users.findByEmail(dto.email)
         if (!existingUser) {
-            throw new NotFoundException({ message: 'Пользователь не найден' })
+            throw new BadRequestException({ message: 'Пользователь не найден' })
         }
 
         const isPasswordMatch = await brcypt.compare(dto.password, existingUser.password)
 
         if (!isPasswordMatch) {
-            throw new UnauthorizedException({ message: 'Неверные данные' })
+            throw new BadRequestException({ message: 'Неверные данные' })
         }
 
         if (existingUser.enabledTwoFactor) {
@@ -65,7 +65,7 @@ export class AuthService {
 
         this.setCookies(res, refreshToken, accessToken)
 
-        return existingUser
+        return this.users.findById(existingUser.id)
     }
 
     async verify2fa(code: string, userId: number, res: Response) {
@@ -86,17 +86,6 @@ export class AuthService {
         const user = await this.users.findById(userId)
 
 
-        try {
-            await this.mail.sendMail({
-                to: user!.email,
-                subject: 'Требуется подтверждение входа',
-                text: `Здравствуйте ${user!.login}, код для входа - ${dbCode}`
-            })
-        } catch (error) {
-            console.log(error);
-        }
-
-
 
         if (dbCode.code !== code) {
             return {
@@ -112,8 +101,8 @@ export class AuthService {
 
         const { accessToken, refreshToken } = await this.generateTokensPair(
             userId,
-            user!.role,
-            user!.email
+            user!.role!,
+            user!.email!
         )
 
         this.setCookies(res, refreshToken, accessToken)
@@ -136,6 +125,30 @@ export class AuthService {
         res.clearCookie('refreshToken')
     }
 
+    async sendVerificationCode(id: number) {
+        const user = await this.users.findById(id)
+
+        if (!user) {
+            throw new BadRequestException('Пользователь с таким id не существует')
+        }
+
+        const code = await this.prisma.twoVerificationCode.findFirst({ where: { userId: id, isUsed: false } })
+
+        if (!code) {
+            throw new NotFoundException('кода нет')
+        }
+        try {
+            await this.mail.sendMail({
+                to: user.email,
+                subject: 'Требуется подтверждение входа',
+                text: `Здравствуйте ${user.login}, код для входа - ${code.code}`
+            })
+        } catch (error) {
+            console.log('Ошибка в отправке письма');
+
+        }
+    }
+
     async getMe(req: Request) {
         const accessToken = req.cookies.accessToken
         if (!accessToken) {
@@ -156,28 +169,17 @@ export class AuthService {
             { expiresIn: this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES') }
         );
 
-        let refreshToken: string;
-        let existingRefreshToken = await this.prisma.refreshToken.findFirst({
-            where: { userId: id }
-        });
+        const existingRefreshToken = await this.prisma.refreshToken.findFirst({ where: { userId: id } })
 
-        if (existingRefreshToken) {
-            refreshToken = existingRefreshToken.tokenValue;
-        } else {
-            refreshToken = this.jwt.sign(
-                { id, role, email },
-                { expiresIn: this.configService.getOrThrow<string>('JWT_REFRESH_EXPIRES') }
-            );
+        if (!existingRefreshToken) {
+            const newRefreshToken = this.jwt.sign({ id, role, email }, { expiresIn: '7d' })
+            const token = await this.prisma.refreshToken.create({ data: { userId: id, tokenValue: newRefreshToken } })
 
-            await this.prisma.refreshToken.create({
-                data: {
-                    tokenValue: refreshToken,
-                    userId: id
-                }
-            });
+            return { accessToken, refreshToken: token.tokenValue }
         }
 
-        return { accessToken, refreshToken };
+
+        return { accessToken, refreshToken: existingRefreshToken.tokenValue };
     }
 
     private setCookies(res: Response, refreshToken: string, accessToken: string) {
@@ -300,7 +302,6 @@ export class AuthService {
 
         const storedToken = await this.prisma.refreshToken.findFirst({
             where: { tokenValue: refreshToken },
-            include: { user: true },
         })
 
         if (!storedToken) {
@@ -317,9 +318,8 @@ export class AuthService {
                     payload.email,
                 )
 
-            await this.prisma.refreshToken.delete({
-                where: { id: storedToken.id },
-            })
+            await this.prisma.refreshToken.update({ where: { id: storedToken.id }, data: { tokenValue: newRefreshToken } })
+
 
             this.setCookies(res, newRefreshToken, accessToken)
 

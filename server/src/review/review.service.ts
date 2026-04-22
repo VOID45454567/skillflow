@@ -11,9 +11,9 @@ export class ReviewService {
     async create(userId: number, text: string, courseId: number) {
         return await this.prisma.review.create({
             data: {
-                text,
-                userId,
-                courseId
+                text: text,
+                userId: userId,
+                courseId: courseId,
             }
         })
     }

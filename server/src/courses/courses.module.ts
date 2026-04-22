@@ -4,9 +4,12 @@ import { CoursesController } from './courses.controller';
 import { JwtStrategy } from '@/strategies/passport.jwt.strategy';
 import { JwtAuthGuard } from '@/guards/jwt.auth.guard';
 import { TransactionService } from '@/transaction/transaction.service';
+import { MinioService } from '@/minio/minio.service';
+import { UserCourseProgressService } from '@/user-course-progress/user-course-progress.service';
+import { HeatmapService } from '@/heatmap/heatmap.service';
 
 @Module({
   controllers: [CoursesController],
-  providers: [CoursesService, JwtStrategy, JwtAuthGuard, TransactionService],
+  providers: [CoursesService, JwtStrategy, JwtAuthGuard, TransactionService, MinioService, UserCourseProgressService, HeatmapService],
 })
 export class CoursesModule { }

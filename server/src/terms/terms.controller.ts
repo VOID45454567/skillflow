@@ -39,8 +39,7 @@ export class TermsController {
   }
 
   @Get('categories')
-  @UseGuards(JwtAuthGuard, JwtRolesGuard)
-  @Role(Roles.ADMIN)
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async getCategories() {
     return await this.termsService.getCategories()
@@ -48,8 +47,7 @@ export class TermsController {
 
 
   @Get('tags')
-  @UseGuards(JwtAuthGuard, JwtRolesGuard)
-  @Role(Roles.ADMIN)
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async getTags() {
     return await this.termsService.getTags()

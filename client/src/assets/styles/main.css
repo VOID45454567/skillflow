@@ -1,0 +1,542 @@
+@import 'tailwindcss';
+
+@import './theme.css';
+@import './animations.css';
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  :root {
+    --color-primary: #6366f1;
+    --color-primary-dark: #4f46e5;
+    --color-accent: #a78bfa;
+    --color-accent-pink: #f472b6;
+    --color-accent-cyan: #67e8f9;
+    --color-surface: rgba(255, 255, 255, 0.75);
+    --color-surface-hover: rgba(255, 255, 255, 0.9);
+  }
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.7);
+  }
+}
+
+@layer components {
+  .glass {
+    background: var(--color-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-border-light);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .glass-strong {
+    background: var(--color-surface-strong);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  .input-styled {
+    transition: all 0.2s ease;
+  }
+
+  .input-styled:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .nav-link {
+    position: relative;
+    transition: color 0.2s ease;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    transition: width 0.3s ease;
+    border-radius: 1px;
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
+
+  .badge-glow {
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+@layer utilities {
+  /* ===== Основные цвета ===== */
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+
+  .bg-primary-dark {
+    background-color: var(--color-primary-dark);
+  }
+
+  .bg-accent {
+    background-color: var(--color-accent);
+  }
+
+  .bg-accent-pink {
+    background-color: var(--color-accent-pink);
+  }
+
+  .bg-accent-cyan {
+    background-color: var(--color-accent-cyan);
+  }
+
+  .text-primary {
+    color: var(--color-primary);
+  }
+
+  .text-primary-dark {
+    color: var(--color-primary-dark);
+  }
+
+  .text-accent {
+    color: var(--color-accent);
+  }
+
+  .text-accent-pink {
+    color: var(--color-accent-pink);
+  }
+
+  .text-accent-cyan {
+    color: var(--color-accent-cyan);
+  }
+
+  .border-primary {
+    border-color: var(--color-primary);
+  }
+
+  .border-accent {
+    border-color: var(--color-accent);
+  }
+
+  .border-accent-pink {
+    border-color: var(--color-accent-pink);
+  }
+
+  .border-accent-cyan {
+    border-color: var(--color-accent-cyan);
+  }
+
+  /* ===== Прозрачности (opacity variants) ===== */
+  /* ===== Прозрачности (opacity variants) ===== */
+  .bg-primary\/5 {
+    background-color: rgba(99, 102, 241, 0.05);
+  }
+
+  .bg-primary\/10 {
+    background-color: rgba(99, 102, 241, 0.1);
+  }
+
+  .bg-primary\/20 {
+    background-color: rgba(99, 102, 241, 0.2);
+  }
+
+  .bg-primary\/30 {
+    background-color: rgba(99, 102, 241, 0.3);
+  }
+
+  .bg-primary\/40 {
+    background-color: rgba(99, 102, 241, 0.4);
+  }
+
+  .bg-primary\/60 {
+    background-color: rgba(99, 102, 241, 0.6);
+  }
+
+  .bg-primary\/80 {
+    background-color: rgba(99, 102, 241, 0.8);
+  }
+
+  .bg-accent\/5 {
+    background-color: rgba(167, 139, 250, 0.05);
+  }
+
+  .bg-accent\/10 {
+    background-color: rgba(167, 139, 250, 0.1);
+  }
+
+  .bg-accent\/20 {
+    background-color: rgba(167, 139, 250, 0.2);
+  }
+
+  .bg-accent\/40 {
+    background-color: rgba(167, 139, 250, 0.4);
+  }
+
+  .bg-accent\/60 {
+    background-color: rgba(167, 139, 250, 0.6);
+  }
+
+  .bg-accent\/80 {
+    background-color: rgba(167, 139, 250, 0.8);
+  }
+
+  .bg-accent-pink\/5 {
+    background-color: rgba(244, 114, 182, 0.05);
+  }
+
+  .bg-accent-pink\/10 {
+    background-color: rgba(244, 114, 182, 0.1);
+  }
+
+  .bg-accent-pink\/20 {
+    background-color: rgba(244, 114, 182, 0.2);
+  }
+
+  .bg-accent-pink\/40 {
+    background-color: rgba(244, 114, 182, 0.4);
+  }
+
+  .bg-accent-pink\/60 {
+    background-color: rgba(244, 114, 182, 0.6);
+  }
+
+  .bg-accent-pink\/80 {
+    background-color: rgba(244, 114, 182, 0.8);
+  }
+
+  .bg-accent-cyan\/5 {
+    background-color: rgba(103, 232, 249, 0.05);
+  }
+
+  .bg-accent-cyan\/10 {
+    background-color: rgba(103, 232, 249, 0.1);
+  }
+
+  .bg-accent-cyan\/20 {
+    background-color: rgba(103, 232, 249, 0.2);
+  }
+
+  .bg-accent-cyan\/40 {
+    background-color: rgba(103, 232, 249, 0.4);
+  }
+
+  .bg-accent-cyan\/60 {
+    background-color: rgba(103, 232, 249, 0.6);
+  }
+
+  .bg-accent-cyan\/80 {
+    background-color: rgba(103, 232, 249, 0.8);
+  }
+
+  /* ===== Градиенты (from/to) ===== */
+  .from-primary {
+    --tw-gradient-from: var(--color-primary);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(99, 102, 241, 0));
+  }
+
+  .from-primary-dark {
+    --tw-gradient-from: var(--color-primary-dark);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(79, 70, 229, 0));
+  }
+
+  .from-accent {
+    --tw-gradient-from: var(--color-accent);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(167, 139, 250, 0));
+  }
+
+  .from-accent-pink {
+    --tw-gradient-from: var(--color-accent-pink);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(244, 114, 182, 0));
+  }
+
+  .from-accent-cyan {
+    --tw-gradient-from: var(--color-accent-cyan);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(103, 232, 249, 0));
+  }
+
+  .to-primary {
+    --tw-gradient-to: var(--color-primary);
+  }
+
+  .to-primary-dark {
+    --tw-gradient-to: var(--color-primary-dark);
+  }
+
+  .to-accent {
+    --tw-gradient-to: var(--color-accent);
+  }
+
+  .to-accent-pink {
+    --tw-gradient-to: var(--color-accent-pink);
+  }
+
+  .to-accent-cyan {
+    --tw-gradient-to: var(--color-accent-cyan);
+  }
+
+  /* Готовые градиенты */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  }
+
+  .bg-gradient-accent {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-pink));
+  }
+
+  .bg-gradient-cyan {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent-cyan));
+  }
+
+  /* ===== Hover состояния ===== */
+  .hover\:bg-primary-dark:hover {
+    background-color: var(--color-primary-dark);
+  }
+
+  .hover\:bg-primary\/10:hover {
+    background-color: rgba(99, 102, 241, 0.1);
+  }
+
+  .hover\:bg-primary\/20:hover {
+    background-color: rgba(99, 102, 241, 0.2);
+  }
+
+  .hover\:bg-accent\/10:hover {
+    background-color: rgba(167, 139, 250, 0.1);
+  }
+
+  .hover\:bg-accent-pink\/10:hover {
+    background-color: rgba(244, 114, 182, 0.1);
+  }
+
+  .hover\:bg-accent-cyan\/10:hover {
+    background-color: rgba(103, 232, 249, 0.1);
+  }
+
+  .hover\:text-primary:hover {
+    color: var(--color-primary);
+  }
+
+  .hover\:text-primary-dark:hover {
+    color: var(--color-primary-dark);
+  }
+
+  .hover\:text-accent:hover {
+    color: var(--color-accent);
+  }
+
+  .hover\:text-accent-pink:hover {
+    color: var(--color-accent-pink);
+  }
+
+  .hover\:border-primary:hover {
+    border-color: var(--color-primary);
+  }
+
+  .hover\:border-accent:hover {
+    border-color: var(--color-accent);
+  }
+
+  .hover\:border-accent-pink\/40:hover {
+    border-color: rgba(244, 114, 182, 0.4);
+  }
+
+  .hover\:border-accent-cyan\/40:hover {
+    border-color: rgba(103, 232, 249, 0.4);
+  }
+
+  /* ===== Focus состояния ===== */
+  .focus\:border-primary:focus {
+    border-color: var(--color-primary);
+  }
+
+  .focus\:border-accent:focus {
+    border-color: var(--color-accent);
+  }
+
+  .focus\:ring-primary:focus {
+    --tw-ring-color: var(--color-primary);
+  }
+
+  /* ===== Тени ===== */
+  .shadow-primary\/20 {
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+  }
+
+  .shadow-primary\/30 {
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+  }
+
+  .shadow-accent\/20 {
+    box-shadow: 0 4px 6px -1px rgba(167, 139, 250, 0.2);
+  }
+
+  .shadow-accent-pink\/20 {
+    box-shadow: 0 4px 6px -1px rgba(244, 114, 182, 0.2);
+  }
+
+  .shadow-accent-cyan\/20 {
+    box-shadow: 0 4px 6px -1px rgba(103, 232, 249, 0.2);
+  }
+
+  /* ===== Цвета для статусов (используются в профиле) ===== */
+  .bg-emerald-50 {
+    background-color: rgb(236, 253, 245);
+  }
+
+  .text-emerald-600 {
+    color: rgb(5, 150, 105);
+  }
+
+  .bg-amber-50 {
+    background-color: rgb(255, 251, 235);
+  }
+
+  .text-amber-500 {
+    color: rgb(245, 158, 11);
+  }
+
+  .bg-rose-50 {
+    background-color: rgb(255, 241, 242);
+  }
+
+  .text-rose-500 {
+    color: rgb(244, 63, 94);
+  }
+
+  .bg-rose-500 {
+    background-color: rgb(244, 63, 94);
+  }
+
+  .bg-blue-50 {
+    background-color: rgb(239, 246, 255);
+  }
+
+  .text-blue-600 {
+    color: rgb(37, 99, 235);
+  }
+
+  .bg-violet-50 {
+    background-color: rgb(245, 243, 255);
+  }
+
+  .text-violet-600 {
+    color: rgb(124, 58, 237);
+  }
+
+  /* ===== Дополнительные градиенты для ошибок ===== */
+  .from-amber-500 {
+    --tw-gradient-from: #f59e0b;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(245, 158, 11, 0));
+  }
+
+  .to-orange-500 {
+    --tw-gradient-to: #f97316;
+  }
+
+  .from-red-500 {
+    --tw-gradient-from: #ef4444;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(239, 68, 68, 0));
+  }
+
+  .to-rose-600 {
+    --tw-gradient-to: #e11d48;
+  }
+
+  .from-purple-500 {
+    --tw-gradient-from: #a855f7;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(168, 85, 247, 0));
+  }
+
+  .from-gray-500 {
+    --tw-gradient-from: #6b7280;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(107, 114, 128, 0));
+  }
+
+  .to-slate-600 {
+    --tw-gradient-to: #475569;
+  }
+
+  /* ===== Декоративные утилиты ===== */
+  .bg-white\/40 {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .bg-white\/60 {
+    background-color: rgba(255, 255, 255, 0.6);
+  }
+
+  .bg-white\/80 {
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+
+  .bg-white\/90 {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+  .border-white\/70 {
+    border-color: rgba(255, 255, 255, 0.7);
+  }
+
+  .border-gray-200\/60 {
+    border-color: rgba(229, 231, 235, 0.6);
+  }
+}
