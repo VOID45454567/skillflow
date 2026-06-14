@@ -1,5 +1,5 @@
 <template>
-  <AppModal
+  <Modal
     :model-value="modelValue"
     title="Установка цены"
     description="Укажите стоимость курса в 💎"
@@ -108,14 +108,14 @@
         </AppButton>
       </div>
     </div>
-  </AppModal>
+  </Modal>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { Gem, Check } from "@lucide/vue";
-import AppModal from "@/components/common/Modal.vue";
 import AppButton from "@/components/ui/AppButton.vue";
+import Modal from "@/components/common/Modal.vue";
 
 const props = defineProps<{
   modelValue: boolean;

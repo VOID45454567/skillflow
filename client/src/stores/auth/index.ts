@@ -5,7 +5,6 @@ import type { User } from "@/types/user";
 import type { LoginUserDto, RegisterUserDto } from "@/types/user/dto";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
-import { useUserStore } from "../user";
 import { UserVerificationStatuses } from "@/types/enums/verification-statuses";
 
 export const useAuthStore = defineStore('auth', () => {
@@ -13,7 +12,6 @@ export const useAuthStore = defineStore('auth', () => {
     const registerState = ref<IRegisterState>({ email: "", login: "", password: "", validationErorrs: [], credencialsError: "" })
     const loginState = ref<ILoginState>({ email: "", password: "", validationErorrs: [], credencialsError: "" })
 
-    const userStore = useUserStore()
 
     const currentUser = ref<User | undefined>(undefined)
 
@@ -56,17 +54,38 @@ export const useAuthStore = defineStore('auth', () => {
         router.push({ name: 'profile' })
     }
     const register = async (dto: RegisterUserDto) => {
-        const response = await API.auth.register(dto)
-        if (!response!.success) {
-            registerState.value.validationErorrs = response!.errors!
-            loginState.value.credencialsError = response?.error
+        try {
+            const response = await API.auth.register(dto)
+            console.log('Register store response:', response);
+
+            if (!response?.success) {
+                registerState.value.validationErorrs = response?.errors || []
+                registerState.value.credencialsError = response?.error || ''
+                return false
+            }
+
+            const userData = response.data?.user || response.data
+
+            if (userData) {
+                setCurrentUser(userData)
+                router.push({ name: 'profile' })
+                return true
+            } else {
+                console.error('Нет данных пользователя в ответе:', response)
+                registerState.value.credencialsError = 'Не удалось получить данные пользователя'
+                return false
+            }
+        } catch (err) {
+            console.error('Необработанная ошибка при регистрации:', err)
+            registerState.value.credencialsError = 'Произошла неизвестная ошибка'
+            return false
         }
-        setCurrentUser(response?.data.user)
-        router.push({ name: 'profile' })
     }
 
     const getMe = async () => {
         const user = await API.auth.getMe()
+        console.log('current user' + user);
+
         if (user === undefined) {
         }
         setCurrentUser(user)

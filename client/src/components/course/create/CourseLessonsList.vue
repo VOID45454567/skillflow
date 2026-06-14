@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="glass-strong rounded-3xl p-6 lg:p-8 animate-fadeInUp"
-    style="animation-delay: 0.3s"
-  >
+  <div class="glass-strong rounded-3xl p-6 lg:p-8 animate-fadeInUp" style="animation-delay: 0.3s">
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
         <div
@@ -12,9 +9,7 @@
         </div>
         <div>
           <h2 class="text-xl font-bold text-gray-800">Уроки курса</h2>
-          <p class="text-sm text-gray-500">
-            {{ lessons.length }} уроков · {{ totalDuration }} мин
-          </p>
+          <p class="text-sm text-gray-500">{{ lessons.length }} уроков · {{ totalDuration }} мин</p>
         </div>
       </div>
 
@@ -26,15 +21,15 @@
 
     <!-- Lessons List -->
     <div v-if="lessons.length > 0" class="space-y-3">
-      <LessonCard
+      <LessonCardEditor
         v-for="(lesson, index) in lessons"
         :key="lesson.tempId || index"
         :lesson="lesson"
         :index="index"
         :is-selected="selectedLessonIndex === index"
+        @select="emit('select', index)"
         @edit="emit('edit', index)"
         @remove="emit('remove', index)"
-        @select="emit('select', index)"
       />
     </div>
 
@@ -51,26 +46,26 @@
 </template>
 
 <script setup lang="ts">
-import { Layers, Plus } from "@lucide/vue";
-import BaseButton from "@/components/ui/AppButton.vue";
-import LessonCard from "../LessonCard.vue";
-import type { Lesson, LessonContent } from "@/types/course/Lesson";
+import { Layers, Plus } from '@lucide/vue'
+import BaseButton from '@/components/ui/AppButton.vue'
+import LessonCardEditor from './LessonCardEditor.vue'
+import type { Lesson, LessonContent } from '@/types/course/Lesson'
 
-interface LessonWithTemp extends Partial<Lesson> {
-  tempId?: number;
-  content: LessonContent;
+interface LessonWithTemp extends Partial<Omit<Lesson, 'content'>> {
+  tempId?: number
+  content: LessonContent
 }
 
 defineProps<{
-  lessons: LessonWithTemp[];
-  totalDuration: number;
-  selectedLessonIndex: number;
-}>();
+  lessons: LessonWithTemp[]
+  totalDuration: number
+  selectedLessonIndex: number
+}>()
 
 const emit = defineEmits<{
-  add: [];
-  edit: [index: number];
-  remove: [index: number];
-  select: [index: number];
-}>();
+  add: []
+  edit: [index: number]
+  remove: [index: number]
+  select: [index: number]
+}>()
 </script>

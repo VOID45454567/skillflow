@@ -13,13 +13,13 @@
           </button>
           <div>
             <h1 class="text-3xl font-bold text-gray-800">
-              {{ isForOrganization ? "Создание курса организации" : "Создание курса" }}
+              {{ isForOrganization ? 'Создание курса организации' : 'Создание курса' }}
             </h1>
             <p class="text-gray-500">
               {{
                 isForOrganization
                   ? `Курс будет создан в организации "${organizationName}"`
-                  : "Создайте свой уникальный курс и делитесь знаниями"
+                  : 'Создайте свой уникальный курс и делитесь знаниями'
               }}
             </p>
           </div>
@@ -53,10 +53,7 @@
       />
 
       <!-- Content Preview -->
-      <div
-        v-if="selectedLesson"
-        class="glass-strong rounded-3xl p-6 lg:p-8 animate-fadeInUp"
-      >
+      <div v-if="selectedLesson" class="glass-strong rounded-3xl p-6 lg:p-8 animate-fadeInUp">
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
             <div
@@ -114,7 +111,7 @@
         </BaseButton>
         <BaseButton @click="publishCourse">
           <Rocket class="w-4 h-4 mr-2" />
-          {{ isForOrganization ? "Опубликовать в организации" : "Опубликовать курс" }}
+          {{ isForOrganization ? 'Опубликовать в организации' : 'Опубликовать курс' }}
         </BaseButton>
       </div>
     </div>
@@ -140,136 +137,139 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { Eye, Save, Rocket, ChevronLeft, ChevronRight, ArrowLeft } from "@lucide/vue";
-import BaseButton from "@/components/ui/AppButton.vue";
-import Modal from "@/components/common/Modal.vue";
-import CourseProgressBar from "@/components/course/create/CourseProgressBar.vue";
-import CourseBasicInfo from "@/components/course/create/CourseBasicInfo.vue";
-import CourseLessonsList from "@/components/course/create/CourseLessonsList.vue";
-import LessonModal from "@/components/course/create/LessonModal.vue";
-import CategoryTagsSelector from "@/components/course/create/CategoryTagsSelector.vue";
-import ContentBlockPreview from "@/components/course/ContentBlockPreview.vue";
-import { useToast } from "@/composables/useToast";
-import { useTermStore } from "@/stores/terms";
-import { useCoursesStore } from "@/stores/courses";
-import { useCourseDraftStore } from "@/stores/courses/courseDraft";
-import { useOrganizationStore } from "@/stores/organization";
-import type { CourseTerm } from "@/types/course/course-term";
-import type { Lesson, LessonContent } from "@/types/course/Lesson";
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { Eye, Save, Rocket, ChevronLeft, ChevronRight, ArrowLeft } from '@lucide/vue'
+import BaseButton from '@/components/ui/AppButton.vue'
+import Modal from '@/components/common/Modal.vue'
+import CourseProgressBar from '@/components/course/create/CourseProgressBar.vue'
+import CourseBasicInfo from '@/components/course/create/CourseBasicInfo.vue'
+import CourseLessonsList from '@/components/course/create/CourseLessonsList.vue'
+import LessonModal from '@/components/course/create/LessonModal.vue'
+import CategoryTagsSelector from '@/components/course/create/CategoryTagsSelector.vue'
+import ContentBlockPreview from '@/components/course/ContentBlockPreview.vue'
+import { useToast } from '@/composables/useToast'
+import { useTermStore } from '@/stores/terms'
+import { useCoursesStore } from '@/stores/courses'
+import { useCourseDraftStore } from '@/stores/courses/courseDraft'
+import { useOrganizationStore } from '@/stores/organization'
+import type { CourseTerm } from '@/types/course/course-term'
+import type { Lesson, LessonContent } from '@/types/course/Lesson'
+import { useAdminStore } from '@/stores/admin'
 
-interface LessonWithTemp extends Partial<Omit<Lesson, "content">> {
-  tempId?: number;
-  content: LessonContent;
+interface LessonWithTemp extends Partial<Omit<Lesson, 'content'>> {
+  tempId?: number
+  content: LessonContent
 }
 
-const { success, error: showError } = useToast();
-const termStore = useTermStore();
-const draftStore = useCourseDraftStore();
-const coursesStore = useCoursesStore();
-const organizationStore = useOrganizationStore();
-const router = useRouter();
-const route = useRoute();
+const { success, error: showError } = useToast()
+const termStore = useAdminStore()
+const draftStore = useCourseDraftStore()
+const coursesStore = useCoursesStore()
+const organizationStore = useOrganizationStore()
+const router = useRouter()
+const route = useRoute()
 
-const orgId = ref<number | undefined>();
-const isForOrganization = computed(() => !!orgId.value);
+const orgId = ref<number | undefined>()
+const isForOrganization = computed(() => !!orgId.value)
 const organizationName = computed(() => {
-  if (!orgId.value) return "";
-  const org = organizationStore.allOrgs.find((o) => o.id === orgId.value);
-  return org?.name || "";
-});
+  if (!orgId.value) return ''
+  const org = organizationStore.allOrgs.find((o) => o.id === orgId.value)
+  return org?.name || ''
+})
 
 // Course Data
 const courseData = ref({
-  title: "",
-  description: "",
-  level: "",
+  title: '',
+  description: '',
+  level: '',
   isFree: true,
   price: 0,
-});
+})
 
-const selectedCategory = ref<CourseTerm | null>(null);
-const selectedTags = ref<CourseTerm[]>([]);
+const selectedCategory = ref<CourseTerm | null>(null)
+const selectedTags = ref<CourseTerm[]>([])
 
 // Lessons
-const lessons = ref<LessonWithTemp[]>([]);
-const showLessonModal = ref(false);
-const showTermsModal = ref(false);
-const editingLessonIndex = ref<number | null>(null);
-const selectedLessonIndex = ref(0);
+const lessons = ref<LessonWithTemp[]>([])
+const showLessonModal = ref(false)
+const showTermsModal = ref(false)
+const editingLessonIndex = ref<number | null>(null)
+const selectedLessonIndex = ref(0)
 
 const currentLesson = ref<LessonWithTemp>({
-  title: "",
+  title: '',
   requredTime: 15,
   goals: [],
   content: { sections: [] },
-});
+})
 
 // Computed
 const completionPercentage = computed(() => {
-  let filled = 0;
-  const total = 5;
-  if (courseData.value.title) filled++;
-  if (courseData.value.description) filled++;
-  if (courseData.value.level) filled++;
-  if (selectedCategory.value) filled++;
-  if (lessons.value.length > 0) filled++;
-  return Math.round((filled / total) * 100);
-});
+  let filled = 0
+  const total = 5
+  if (courseData.value.title) filled++
+  if (courseData.value.description) filled++
+  if (courseData.value.level) filled++
+  if (selectedCategory.value) filled++
+  if (lessons.value.length > 0) filled++
+  return Math.round((filled / total) * 100)
+})
 
 const totalDuration = computed(() => {
-  return lessons.value.reduce((acc, l) => acc + (l.requredTime || 0), 0);
-});
+  console.log(lessons.value)
+
+  return lessons.value.reduce((acc, l) => acc + (l.requredTime || 0), 0)
+})
 
 const selectedLesson = computed(() => {
-  if (lessons.value.length === 0) return null;
-  return lessons.value[selectedLessonIndex.value];
-});
+  if (lessons.value.length === 0) return null
+  return lessons.value[selectedLessonIndex.value]
+})
 
 // Methods
 const selectLesson = (index: number) => {
-  selectedLessonIndex.value = index;
-};
+  selectedLessonIndex.value = index
+}
 
 const prevLesson = () => {
   if (selectedLessonIndex.value > 0) {
-    selectedLessonIndex.value--;
+    selectedLessonIndex.value--
   }
-};
+}
 
 const nextLesson = () => {
   if (selectedLessonIndex.value < lessons.value.length - 1) {
-    selectedLessonIndex.value++;
+    selectedLessonIndex.value++
   }
-};
+}
 
 const openLessonModal = () => {
-  editingLessonIndex.value = null;
+  editingLessonIndex.value = null
   currentLesson.value = {
-    title: "",
+    title: '',
     requredTime: 15,
     goals: [],
     content: { sections: [] },
-  };
-  showLessonModal.value = true;
-};
+  }
+  showLessonModal.value = true
+}
 
 const editLesson = (index: number) => {
-  editingLessonIndex.value = index;
+  editingLessonIndex.value = index
   currentLesson.value = {
     ...lessons.value[index],
     content: { ...lessons.value[index]!.content },
-  };
-  showLessonModal.value = true;
-};
+  }
+  showLessonModal.value = true
+}
 
 const removeLesson = (index: number) => {
-  lessons.value.splice(index, 1);
+  lessons.value.splice(index, 1)
   if (selectedLessonIndex.value >= lessons.value.length) {
-    selectedLessonIndex.value = Math.max(0, lessons.value.length - 1);
+    selectedLessonIndex.value = Math.max(0, lessons.value.length - 1)
   }
-};
+}
 
 const saveLesson = (lesson: LessonWithTemp) => {
   const lessonData: LessonWithTemp = {
@@ -279,22 +279,22 @@ const saveLesson = (lesson: LessonWithTemp) => {
       editingLessonIndex.value !== null
         ? lessons.value[editingLessonIndex.value]?.tempId
         : Date.now(),
-  };
-
-  if (editingLessonIndex.value !== null) {
-    lessons.value[editingLessonIndex.value] = lessonData;
-  } else {
-    lessons.value.push(lessonData);
-    selectedLessonIndex.value = lessons.value.length - 1;
   }
 
-  showLessonModal.value = false;
-};
+  if (editingLessonIndex.value !== null) {
+    lessons.value[editingLessonIndex.value] = lessonData
+  } else {
+    lessons.value.push(lessonData)
+    selectedLessonIndex.value = lessons.value.length - 1
+  }
+
+  showLessonModal.value = false
+}
 
 const closeLessonModal = () => {
-  showLessonModal.value = false;
-  editingLessonIndex.value = null;
-};
+  showLessonModal.value = false
+  editingLessonIndex.value = null
+}
 
 const autoSaveDraft = () => {
   const draft = {
@@ -307,29 +307,29 @@ const autoSaveDraft = () => {
     tags: selectedTags.value,
     lessons: lessons.value.map(({ tempId, ...lesson }) => lesson as any),
     orgId: orgId.value,
-  };
-  draftStore.saveDraft(draft);
-};
+  }
+  draftStore.saveDraft(draft)
+}
 
 const saveDraft = () => {
-  autoSaveDraft();
-  success("Черновик сохранён");
-};
+  autoSaveDraft()
+  success('Черновик сохранён')
+}
 
 const publishCourse = async () => {
   const validation = coursesStore.validateCourse(
     courseData.value,
     selectedCategory.value,
-    lessons.value
-  );
+    lessons.value,
+  )
 
   if (!validation.valid) {
-    showError(validation.error!);
-    return;
+    showError(validation.error!)
+    return
   }
 
   try {
-    const visibility = isForOrganization.value ? "ORGANIZATION" : "DRAFT";
+    const visibility = isForOrganization.value ? 'ORGANIZATION' : 'DRAFT'
 
     const result = await coursesStore.createCourse(
       courseData.value,
@@ -337,78 +337,78 @@ const publishCourse = async () => {
       selectedTags.value,
       lessons.value,
       visibility,
-      orgId.value // Передаем orgId если курс для организации
-    );
+      orgId.value,
+    )
 
     success(
       isForOrganization.value
-        ? "Курс успешно опубликован в организации!"
-        : "Курс успешно опубликован!"
-    );
+        ? 'Курс успешно опубликован в организации!'
+        : 'Курс успешно опубликован!',
+    )
 
-    draftStore.clearDraft();
+    draftStore.clearDraft()
 
     // Возвращаемся назад
-    goBack();
+    goBack()
   } catch (err: any) {
-    showError(err?.message || "Не удалось опубликовать курс");
+    showError(err?.message || 'Не удалось опубликовать курс')
   }
-};
+}
 
 const goBack = () => {
   if (isForOrganization.value) {
-    router.push({ name: "organization-dashboard", params: { id: orgId.value } });
+    router.push({ name: 'organization-dashboard', params: { id: orgId.value } })
   } else {
-    router.push({ name: "profile" });
+    router.push({ name: 'profile' })
   }
-};
+}
 
 watch(
   [courseData, selectedCategory, selectedTags, lessons],
   () => {
     if (courseData.value.title || lessons.value.length > 0) {
-      autoSaveDraft();
+      autoSaveDraft()
     }
   },
-  { deep: true }
-);
+  { deep: true },
+)
 
 onMounted(async () => {
   // Получаем orgId из query параметров
-  orgId.value = route.query.orgId ? Number(route.query.orgId) : undefined;
+  orgId.value = route.query.orgId ? Number(route.query.orgId) : undefined
 
-  await Promise.all([termStore.getCategories(), termStore.getTags()]);
+  await Promise.all([termStore.getCategories(), termStore.getTags()])
 
   // Загружаем организации если нужно
   if (orgId.value && !organizationStore.allOrgs.length) {
-    await organizationStore.getAll();
+    await organizationStore.getAll()
   }
 
-  const draft = draftStore.loadDraft();
+  const draft = draftStore.loadDraft()
   if (draft) {
     courseData.value = {
-      title: draft.title || "",
-      description: draft.description || "",
-      level: draft.level || "",
+      title: draft.title || '',
+      description: draft.description || '',
+      level: draft.level || '',
       isFree: draft.isFree ?? true,
       price: draft.price || 0,
-    };
-    selectedCategory.value = draft.category;
-    selectedTags.value = draft.tags || [];
+    }
+    selectedCategory.value = draft.category
+    selectedTags.value = draft.tags || []
     lessons.value = (draft.lessons || []).map((l: any, index: number) => ({
       ...l,
       tempId: Date.now() + index,
       content: l.content || { sections: [] },
-    }));
+    }))
 
     if (lessons.value.length > 0) {
-      selectedLessonIndex.value = 0;
+      selectedLessonIndex.value = 0
     }
 
     // Восстанавливаем orgId из черновика если есть
     if (draft.orgId && !orgId.value) {
-      orgId.value = draft.orgId;
+      orgId.value = draft.orgId
     }
   }
-});
+})
 </script>

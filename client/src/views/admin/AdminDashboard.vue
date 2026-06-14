@@ -1,4 +1,3 @@
-<!-- views/AdminDashboard.vue -->
 <template>
   <div class="min-h-[calc(100vh-8rem)] py-8 px-4">
     <div class="max-w-7xl mx-auto space-y-8">
@@ -40,8 +39,8 @@
           color="accent"
         />
         <StatsCard
-          title="Обороты"
-          :value="`${store.totalBalance} 💎`"
+          title="Транзакций на сумму"
+          :value="`${store.totalBalance}р`"
           icon="Wallet"
           color="emerald"
         />
@@ -88,6 +87,8 @@
         <LogsManagement v-else-if="activeTab === 'logs'" />
 
         <AppealsManagement v-else-if="activeTab === 'appeals'" />
+
+        <TermsManager v-else-if="activeTab === 'terms'" />
       </div>
     </div>
   </div>
@@ -103,6 +104,7 @@ import {
   CreditCard,
   History,
   MessageSquare,
+  Folder,
 } from "@lucide/vue";
 import { useAdminStore } from "@/stores/admin";
 import { useToast } from "@/composables/useToast";
@@ -114,12 +116,13 @@ import TransactionsManagement from "@/components/admin/TransactionsManagement.vu
 import PaymentsManagement from "@/components/admin/PaymentsManagement.vue";
 import LogsManagement from "@/components/admin/LogsManagement.vue";
 import AppealsManagement from "@/components/admin/AppealsManagement.vue";
+import TermsManager from "@/components/admin/TermsManager.vue";
 const store = useAdminStore();
 const toast = useToast();
 
 const loading = ref(false);
 const activeTab = ref<
-  "users" | "verification" | "transactions" | "payments" | "logs" | "appeals"
+  "users" | "verification" | "transactions" | "payments" | "logs" | "appeals" | "terms"
 >("users");
 
 const tabs = [
@@ -129,6 +132,7 @@ const tabs = [
   { id: "transactions" as const, label: "Транзакции", icon: ArrowLeftRight },
   { id: "payments" as const, label: "Платежи", icon: CreditCard },
   { id: "logs" as const, label: "Логи", icon: History },
+  { id: "terms" as const, label: "Категории/теги", icon: Folder },
 ];
 onMounted(async () => {
   await loadData();

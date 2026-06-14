@@ -15,9 +15,7 @@
 
       <!-- Бейджи -->
       <div class="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
-        <div
-          class="px-2.5 py-1 rounded-lg bg-white/90 text-xs font-medium text-gray-700 shadow-sm"
-        >
+        <div class="px-2.5 py-1 rounded-lg bg-white/90 text-xs font-medium text-gray-700 shadow-sm">
           {{ mapCourseLevel(course.level.toString()) }}
         </div>
         <div
@@ -65,17 +63,19 @@
         {{ course.title }}
       </h3>
       <p class="text-sm text-gray-500 mb-4 line-clamp-2">
-        {{ course.description || "Описание отсутствует" }}
+        {{ course.description || 'Описание отсутствует' }}
       </p>
 
       <!-- Создатель -->
       <div class="flex items-center gap-2 mb-3">
         <div class="relative">
           <img
-            :src="course.user?.avatarUrl || '/placeholder-avatar.png'"
+            v-if="course.user?.avatarUrl"
+            :src="course.user?.avatarUrl"
             :alt="course.user?.login"
             class="w-6 h-6 rounded-full object-cover"
           />
+          <User v-else></User>
           <div
             v-if="course.organization"
             class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-accent flex items-center justify-center"
@@ -87,7 +87,7 @@
           <div class="flex items-center gap-1">
             <span class="text-xs text-gray-500">Создатель:</span>
             <span class="text-xs font-medium text-gray-700 truncate">
-              {{ course.user?.login || "Неизвестный автор" }}
+              {{ course.user?.login || 'Неизвестный автор' }}
             </span>
           </div>
           <div v-if="course.organization" class="flex items-center gap-1">
@@ -118,9 +118,7 @@
           :key="term.id"
           class="px-2 py-0.5 rounded-md text-xs"
           :class="
-            term.type === 'CATEGORY'
-              ? 'bg-primary/10 text-primary'
-              : 'bg-gray-100 text-gray-600'
+            term.type === 'CATEGORY' ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-600'
           "
         >
           {{ term.name }}
@@ -159,80 +157,78 @@
         class="btn-primary w-full py-2.5 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-1.5"
       >
         <Eye class="w-4 h-4" />
-        {{ userProgress ? "Продолжить" : "Подробнее" }}
+        {{ userProgress ? 'Продолжить' : 'Подробнее' }}
       </router-link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { Users, Star, Clock, Eye, BookOpen, Calendar, Building2 } from "@lucide/vue";
-import { CourseLevels } from "@/types/enums/course-levels";
-import type { Course } from "@/types/course";
-import { useAuthStore } from "@/stores/auth";
-import { mapCourseLevel } from "@/utils/mappers/mapCourseLevel";
-import { formatDate } from "@/utils/formatters/formatDate";
+import { computed } from 'vue'
+import { Users, Star, Clock, Eye, BookOpen, Calendar, Building2, User } from '@lucide/vue'
+import { CourseLevels } from '@/types/enums/course-levels'
+import type { Course } from '@/types/course'
+import { useAuthStore } from '@/stores/auth'
+import { mapCourseLevel } from '@/utils/mappers/mapCourseLevel'
+import { formatDate } from '@/utils/formatters/formatDate'
 
 const props = defineProps<{
-  course: Course;
-  delay?: number;
-}>();
+  course: Course
+  delay?: number
+}>()
 
-const authStore = useAuthStore();
+const authStore = useAuthStore()
 
 const userProgress = computed(() => {
-  if (!authStore.currentUser) return null;
-  return props.course.userCourseProgresses?.find(
-    (p) => p.userId === authStore.currentUser?.id
-  );
-});
+  if (!authStore.currentUser) return null
+  return props.course.userCourseProgresses?.find((p) => p.userId === authStore.currentUser?.id)
+})
 
 const totalDuration = computed(() => {
   const totalMinutes =
-    props.course.lessons?.reduce((sum, lesson) => sum + lesson.requredTime, 0) || 0;
+    props.course.lessons?.reduce((sum, lesson) => sum + lesson.requredTime, 0) || 0
 
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
 
-  if (hours === 0) return `${minutes} мин`;
-  if (minutes === 0) return `${hours} ч`;
-  return `${hours} ч ${minutes} мин`;
-});
+  if (hours === 0) return `${minutes} мин`
+  if (minutes === 0) return `${hours} ч`
+  return `${hours} ч ${minutes} мин`
+})
 
 const formatPrice = (price: number): string => {
-  if (price === 0) return "Бесплатно";
-  return new Intl.NumberFormat("ru-RU", {
-    style: "currency",
-    currency: "RUB",
+  if (price === 0) return 'Бесплатно'
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
     maximumFractionDigits: 0,
-  }).format(price);
-};
+  }).format(price)
+}
 
 const formatNumber = (num: number): string => {
   if (num >= 1000) {
-    return (num / 1000).toFixed(1) + "k";
+    return (num / 1000).toFixed(1) + 'k'
   }
-  return num.toString();
-};
+  return num.toString()
+}
 
 const courseColor = computed(() => {
-  const level = props.course.level?.toString().toUpperCase() || "";
+  const level = props.course.level?.toString().toUpperCase() || ''
 
   const colors: Record<string, { from: string; to: string }> = {
-    BEGINNER: { from: "#67e8f9", to: "#6366f1" },
-    INTERMEDIATE: { from: "#6366f1", to: "#a78bfa" },
-    ADVANCED: { from: "#a78bfa", to: "#f472b6" },
-    PROFESSIONAL: { from: "#f472b6", to: "#ef4444" },
-  };
+    BEGINNER: { from: '#67e8f9', to: '#6366f1' },
+    INTERMEDIATE: { from: '#6366f1', to: '#a78bfa' },
+    ADVANCED: { from: '#a78bfa', to: '#f472b6' },
+    PROFESSIONAL: { from: '#f472b6', to: '#ef4444' },
+  }
 
-  console.log("Course level raw:", props.course.level);
-  console.log("Course level normalized:", level);
-  console.log("Available colors keys:", Object.keys(colors));
-  console.log("Matched color:", colors[level]);
+  console.log('Course level raw:', props.course.level)
+  console.log('Course level normalized:', level)
+  console.log('Available colors keys:', Object.keys(colors))
+  console.log('Matched color:', colors[level])
 
-  return colors[level] || { from: "#6366f1", to: "#a78bfa" };
-});
+  return colors[level] || { from: '#6366f1', to: '#a78bfa' }
+})
 </script>
 
 <style scoped>

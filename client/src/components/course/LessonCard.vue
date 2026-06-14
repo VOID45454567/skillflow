@@ -13,8 +13,8 @@
       <div
         class="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-all"
         :class="{
-          'bg-gradient-to-br from-emerald-500/20 to-teal-500/20': isCompleted,
-          'bg-gradient-to-br from-primary/20 to-accent/20': isActive && !isCompleted,
+          'bg-linear-to-br from-emerald-500/20 to-teal-500/20': isCompleted,
+          'bg-linear-to-br from-primary/20 to-accent/20': isActive && !isCompleted,
           'bg-gray-100': !isCompleted && !isActive,
         }"
       >
@@ -101,24 +101,24 @@ import {
   Clock,
   Check,
   ChevronRight,
-} from "@lucide/vue";
+} from '@lucide/vue'
 
 const props = defineProps<{
-  lesson: any;
-  index: number;
-  isActive: boolean;
-  isCompleted: boolean;
-  isLocked: boolean;
-}>();
+  lesson: any
+  index: number
+  isActive: boolean
+  isCompleted: boolean
+  isLocked: boolean
+}>()
 
 const emit = defineEmits<{
-  select: [lesson: any];
-  complete: [lessonId: number];
-}>();
+  select: [lesson: any]
+  complete: [lessonId: number]
+}>()
 
 function handleClick() {
   if (!props.isLocked) {
-    emit("select", props.lesson);
+    emit('select', props.lesson)
   }
 }
 </script>

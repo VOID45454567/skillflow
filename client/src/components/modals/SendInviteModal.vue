@@ -1,11 +1,10 @@
-<!-- components/organization/dashboard/SendInviteModal.vue -->
 <template>
   <Modal :model-value="modelValue" @close="close" width="md">
     <div class="space-y-5">
       <!-- Заголовок -->
       <div class="text-center mb-2">
         <div
-          class="w-14 h-14 rounded-xl bg-gradient-to-br from-accent-cyan/20 to-primary/20 flex items-center justify-center mx-auto mb-3"
+          class="w-14 h-14 rounded-xl bg-linear-to-br from-accent-cyan/20 to-primary/20 flex items-center justify-center mx-auto mb-3"
         >
           <Mail class="h-7 w-7 text-accent-cyan" />
         </div>
@@ -13,7 +12,6 @@
         <p class="text-sm text-gray-500 mt-1">Пригласите пользователя по email</p>
       </div>
 
-      <!-- Форма -->
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <BaseInput
           v-model="form.email"
@@ -42,7 +40,6 @@
           </p>
         </div>
 
-        <!-- Предпросмотр письма -->
         <div class="p-4 rounded-xl bg-white/30 border border-gray-200">
           <p class="text-xs font-medium text-gray-500 mb-2">Письмо будет содержать:</p>
           <div class="text-sm text-gray-700 space-y-1">

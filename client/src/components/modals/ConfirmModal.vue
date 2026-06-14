@@ -1,4 +1,3 @@
-<!-- components/common/ConfirmModal.vue -->
 <template>
   <Modal :model-value="modelValue" @close="handleCancel" width="sm">
     <div class="space-y-5">

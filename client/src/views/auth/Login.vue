@@ -32,8 +32,7 @@ const handleLogin = async () => {
     <div class="glass-strong w-full max-w-md rounded-3xl p-8 shadow-xl animate-scaleIn">
       <div class="flex items-center justify-center mb-6">
         <div
-          class="h-14 w-14 rounded-2xl bg-linear-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20 animate-float"
-        >
+          class="h-14 w-14 rounded-2xl border-primary flex items-center justify-center shadow-lg shadow-primary/20 animate-float">
           <LogIn class="h-7 w-7 text-primary" />
         </div>
       </div>
@@ -42,38 +41,20 @@ const handleLogin = async () => {
       <p class="text-sm text-gray-500 text-center mb-6">Введите учетные данные</p>
 
       <form @submit.prevent="handleLogin" class="space-y-4">
-        <BaseInput
-          v-model="state.email"
-          type="email"
-          label="Email"
-          placeholder="name@company.com"
-          :icon="Mail"
-        />
-        <p
-          v-if="getValidationError('email', state.validationErorrs)"
-          class="text-xs text-accent-pink ml-1 animate-fadeIn"
-        >
+        <BaseInput v-model="state.email" type="email" label="Email" placeholder="name@company.com" :icon="Mail" />
+        <p v-if="getValidationError('email', state.validationErorrs)"
+          class="text-xs text-accent-pink ml-1 animate-fadeIn">
           {{ getValidationError("email", state.validationErorrs) }}
         </p>
 
-        <BaseInput
-          v-model="state.password"
-          type="password"
-          label="Пароль"
-          placeholder="••••••••"
-          :icon="Lock"
-        />
-        <p
-          v-if="getValidationError('password', state.validationErorrs)"
-          class="text-xs text-accent-pink ml-1 animate-fadeIn"
-        >
+        <BaseInput v-model="state.password" type="password" label="Пароль" placeholder="••••••••" :icon="Lock" />
+        <p v-if="getValidationError('password', state.validationErorrs)"
+          class="text-xs text-accent-pink ml-1 animate-fadeIn">
           {{ getValidationError("password", state.validationErorrs) }}
         </p>
 
-        <div
-          v-if="state.credencialsError"
-          class="p-3 rounded-xl bg-accent-pink/10 border border-accent-pink/20 text-sm text-accent-pink text-center animate-fadeIn"
-        >
+        <div v-if="state.credencialsError"
+          class="p-3 rounded-xl bg-accent-pink/10 border border-accent-pink/20 text-sm text-accent-pink text-center animate-fadeIn">
           {{ state.credencialsError }}
         </div>
 
@@ -83,10 +64,8 @@ const handleLogin = async () => {
         </BaseButton>
       </form>
 
-      <router-link
-        to="/register"
-        class="block text-center text-sm text-primary hover:text-primary-dark font-medium mt-6 transition-colors"
-      >
+      <router-link to="/register"
+        class="block text-center text-sm text-primary hover:text-primary-dark font-medium mt-6 transition-colors">
         Нет аккаунта? Зарегистрироваться
       </router-link>
     </div>

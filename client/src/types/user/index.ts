@@ -28,7 +28,7 @@ export interface User {
     bannedByUsers: BlockInfo[]
     reviews: Review[]
     payments: Payment[]
-    heatmapDatas: Heatmap[],
+    heatmapDatas?: Heatmap[],
     appeals: Appeal[]
     _count: any
 }

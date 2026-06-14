@@ -9,7 +9,7 @@ import { CourseVisibilityTypes } from '@/types/enums/course-visibility-types'
 interface LessonWithTemp {
     tempId?: number
     title?: string
-    requredTimeInMinutes?: number
+    requredTime?: number
     goals?: string[]
     content: LessonContent
     order?: number
@@ -80,7 +80,7 @@ export const useCoursesStore = defineStore('courses', () => {
             title: lesson.title || 'Без названия',
             goals: lesson.goals || [],
             order: order,
-            requredTime: lesson.requredTimeInMinutes,
+            requredTime: lesson.requredTime,
             content: {
                 sections: (lesson.content?.sections || []).map(transformSectionForApi)
             }

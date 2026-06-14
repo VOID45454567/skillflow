@@ -1,6 +1,6 @@
 <!-- components/admin/UserDetailsModal.vue -->
 <template>
-  <Modal :model-value="!!modelValue" @close="$emit('close')" width="lg">
+  <Modal :model-value="!!modelValue" @close="$emit('close')" width="10/12">
     <div v-if="user" class="space-y-5">
       <!-- Заголовок -->
       <div class="flex items-center gap-4">

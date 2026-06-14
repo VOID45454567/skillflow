@@ -1,5 +1,5 @@
 <template>
-  <AppModal :model-value="modelValue" title="Поздравляем!" @close="$emit('close')">
+  <Modal :model-value="modelValue" title="Поздравляем!" @close="$emit('close')">
     <div class="text-center space-y-4">
       <div class="relative">
         <div
@@ -37,13 +37,13 @@
         </AppButton>
       </div>
     </div>
-  </AppModal>
+  </Modal>
 </template>
 
 <script setup lang="ts">
 import { Trophy, PartyPopper, CheckCircle } from "@lucide/vue";
-import AppModal from "@/components/common/Modal.vue";
 import AppButton from "@/components/ui/AppButton.vue";
+import Modal from "@/components/common/Modal.vue";
 
 defineProps<{
   modelValue: boolean;

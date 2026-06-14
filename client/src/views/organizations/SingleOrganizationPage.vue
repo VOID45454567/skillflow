@@ -4,7 +4,7 @@
     <!-- Декоративные элементы -->
     <div class="fixed inset-0 -z-10 overflow-hidden">
       <div
-        class="absolute top-20 right-20 w-72 h-72 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl"
+        class="absolute top-20 right-20 w-72 h-72 bg-linear-to-br from-primary/10 to-accent/10 rounded-full blur-3xl"
       ></div>
     </div>
 
@@ -57,16 +57,12 @@
                     {{ organization.name }}
                   </h1>
                   <p class="text-gray-600 max-w-2xl">
-                    {{ organization.description || "Описание отсутствует" }}
+                    {{ organization.description || 'Описание отсутствует' }}
                   </p>
                 </div>
 
                 <div class="flex gap-2 shrink-0">
-                  <BaseButton
-                    v-if="isOwner"
-                    @click="goToDashboard"
-                    class="shadow-primary/20"
-                  >
+                  <BaseButton v-if="isOwner" @click="goToDashboard" class="shadow-primary/20">
                     <LayoutDashboard class="h-4 w-4 mr-2" />
                     Управление
                   </BaseButton>
@@ -94,9 +90,7 @@
               <div class="flex flex-wrap gap-4 mt-6">
                 <div class="flex items-center gap-2 text-sm text-gray-500">
                   <Users class="h-4 w-4" />
-                  <span
-                    >{{ organization.organizationMembers?.length || 0 }} участников</span
-                  >
+                  <span>{{ organization.organizationMembers?.length || 0 }} участников</span>
                 </div>
                 <div class="flex items-center gap-2 text-sm text-gray-500">
                   <BookOpen class="h-4 w-4" />
@@ -129,9 +123,7 @@
               </div>
               <span class="text-sm text-gray-500">
                 {{ organization.courses?.length || 0 }}
-                {{
-                  pluralize(organization.courses?.length || 0, "курс", "курса", "курсов")
-                }}
+                {{ pluralize(organization.courses?.length || 0, 'курс', 'курса', 'курсов') }}
               </span>
             </div>
 
@@ -204,10 +196,7 @@
               </span>
             </div>
 
-            <div
-              v-if="!organization.organizationMembers?.length"
-              class="text-center py-6"
-            >
+            <div v-if="!organization.organizationMembers?.length" class="text-center py-6">
               <Users class="h-10 w-10 text-gray-300 mx-auto mb-2" />
               <p class="text-sm text-gray-500">Нет участников</p>
             </div>
@@ -255,20 +244,14 @@
             </div>
 
             <div class="space-y-3">
-              <div
-                class="flex items-center justify-between py-2 border-b border-gray-200/40"
-              >
+              <div class="flex items-center justify-between py-2 border-b border-gray-200/40">
                 <span class="text-sm text-gray-500">ID организации</span>
                 <span class="text-sm font-mono text-gray-700">{{ organization.id }}</span>
               </div>
-              <div
-                class="flex items-center justify-between py-2 border-b border-gray-200/40"
-              >
+              <div class="flex items-center justify-between py-2 border-b border-gray-200/40">
                 <span class="text-sm text-gray-500">Код приглашения</span>
                 <div class="flex items-center gap-2">
-                  <span class="text-sm font-mono text-gray-700">{{
-                    organization.inviteCode
-                  }}</span>
+                  <span class="text-sm font-mono text-gray-700">{{ organization.inviteCode }}</span>
                   <button
                     @click="copyInviteCode"
                     class="p-1 rounded hover:bg-primary/10 transition-colors"
@@ -293,8 +276,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Building2,
   ArrowLeft,
@@ -309,90 +292,90 @@ import {
   Image,
   Info,
   Copy,
-} from "@lucide/vue";
-import { useAuthStore } from "@/stores/auth";
-import { useToast } from "@/composables/useToast";
-import BaseButton from "@/components/ui/AppButton.vue";
-import { useOrganizationStore } from "@/stores/organization";
-import { formatDate } from "@/utils/formatters/formatDate";
-import JoinByCodeModal from "@/components/modals/JoinByCodeModal.vue";
+} from '@lucide/vue'
+import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
+import BaseButton from '@/components/ui/AppButton.vue'
+import { useOrganizationStore } from '@/stores/organization'
+import { formatDate } from '@/utils/formatters/formatDate'
+import JoinByCodeModal from '@/components/modals/JoinByCodeModal.vue'
 
-const route = useRoute();
-const router = useRouter();
-const orgStore = useOrganizationStore();
-const authStore = useAuthStore();
-const toast = useToast();
+const route = useRoute()
+const router = useRouter()
+const orgStore = useOrganizationStore()
+const authStore = useAuthStore()
+const toast = useToast()
 
-const loading = ref(true);
-const joinModalOpen = ref(false);
+const loading = ref(true)
+const joinModalOpen = ref(false)
 
-const organization = computed(() => orgStore.currentOrg!);
-const orgId = computed(() => Number(route.params.id));
+const organization = computed(() => orgStore.currentOrg!)
+const orgId = computed(() => Number(route.params.id))
 onMounted(async () => {
-  const org = await orgStore.getOrgById(orgId.value);
-  orgStore.setCurrentOrg(org);
-  console.log(organization.value);
+  const org = await orgStore.getOrgById(orgId.value)
+  orgStore.setCurrentOrg(org)
+  console.log(organization.value)
 
-  loading.value = false;
-});
+  loading.value = false
+})
 const isOwner = computed(() => {
-  return organization.value?.userId === authStore.currentUser?.id;
-});
+  return organization.value?.userId === authStore.currentUser?.id
+})
 
 const isMember = computed(() => {
   return organization.value?.organizationMembers?.some(
-    (m: any) => m.userId === authStore.currentUser?.id
-  );
-});
+    (m: any) => m.userId === authStore.currentUser?.id,
+  )
+})
 
 const goBack = () => {
-  router.push({ name: "organizations" });
-};
+  router.push({ name: 'organizations' })
+}
 
 const goToDashboard = () => {
-  router.push({ name: "organization-dashboard", params: { id: orgId.value } });
-};
+  router.push({ name: 'organization-dashboard', params: { id: orgId.value } })
+}
 
 const goToCourse = (courseId: number) => {
-  router.push({ name: "single-course-page", params: { id: courseId } });
-};
+  router.push({ name: 'single-course-page', params: { id: courseId } })
+}
 
 const joinOrganization = async () => {
   if (!authStore.currentUser) {
-    router.push({ name: "login" });
-    return;
+    router.push({ name: 'login' })
+    return
   }
-  joinModalOpen.value = true;
-};
+  joinModalOpen.value = true
+}
 
 const handleJoined = async () => {
-  joinModalOpen.value = false;
-};
+  joinModalOpen.value = false
+}
 
 const leaveOrganization = async () => {
-  await orgStore.removeMember(organization.value.id, authStore.currentUser!.id);
+  await orgStore.removeMember(organization.value.id, authStore.currentUser!.id)
   orgStore.setCurrentOrg({
     ...organization.value,
     organizationMembers: organization.value.organizationMembers.filter(
-      (member) => member.userId !== authStore.currentUser!.id
+      (member) => member.userId !== authStore.currentUser!.id,
     ),
-  });
-};
+  })
+}
 
 const copyInviteCode = () => {
-  navigator.clipboard.writeText(organization.value?.inviteCode || "");
-  toast.success("Код приглашения скопирован");
-};
+  navigator.clipboard.writeText(organization.value?.inviteCode || '')
+  toast.success('Код приглашения скопирован')
+}
 
 const pluralize = (count: number, one: string, two: string, five: string): string => {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return two;
-  return five;
-};
+  const mod10 = count % 10
+  const mod100 = count % 100
+  if (mod10 === 1 && mod100 !== 11) return one
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return two
+  return five
+}
 
 const openGallery = (index: number) => {
   // Логика открытия галереи
-};
+}
 </script>

@@ -24,9 +24,7 @@
               <Upload class="h-4 w-4 mr-2" />
               Загрузить логотип
             </BaseButton>
-            <p class="text-xs text-gray-500 mt-2">
-              Рекомендуемый размер: 512x512px. Максимум 5MB.
-            </p>
+            <p class="text-xs text-gray-500 mt-2">Рекомендуемый размер: 512x512px. Максимум 5MB.</p>
             <input
               ref="fileInput"
               type="file"
@@ -39,52 +37,6 @@
       </div>
 
       <!-- Галерея -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-800">Галерея изображений</h3>
-          <BaseButton size="sm" variant="outlined" @click="triggerGalleryInput">
-            <Plus class="h-4 w-4 mr-1" />
-            Добавить
-          </BaseButton>
-        </div>
-
-        <div
-          v-if="!organization.images?.length"
-          class="text-center py-8 bg-white/30 rounded-xl"
-        >
-          <Image class="h-10 w-10 text-gray-300 mx-auto mb-2" />
-          <p class="text-sm text-gray-500">Нет изображений в галерее</p>
-        </div>
-
-        <div v-else class="grid grid-cols-4 gap-3">
-          <div
-            v-for="(image, index) in organization.images"
-            :key="index"
-            class="relative aspect-square rounded-xl overflow-hidden group"
-          >
-            <img
-              :src="image"
-              :alt="`Галерея ${index + 1}`"
-              class="w-full h-full object-cover"
-            />
-            <button
-              @click="removeImage(image)"
-              class="absolute top-2 right-2 p-1.5 rounded-lg bg-rose-500/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <Trash2 class="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        <input
-          ref="galleryInput"
-          type="file"
-          accept="image/*"
-          multiple
-          class="hidden"
-          @change="handleGalleryUpload"
-        />
-      </div>
 
       <!-- Опасная зона -->
       <div class="border-t border-rose-200/40 pt-6">
@@ -113,103 +65,103 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { Building2, Upload, Plus, Image, Trash2 } from "@lucide/vue";
-import BaseButton from "@/components/ui/AppButton.vue";
-import { useToast } from "@/composables/useToast";
-import { useModal } from "@/composables/useModal";
-import { useOrganizationStore } from "@/stores/organization";
+import { ref } from 'vue'
+import { Building2, Upload, Plus, Image, Trash2 } from '@lucide/vue'
+import BaseButton from '@/components/ui/AppButton.vue'
+import { useToast } from '@/composables/useToast'
+import { useModal } from '@/composables/useModal'
+import { useOrganizationStore } from '@/stores/organization'
 
 const props = defineProps<{
-  organization: any;
-}>();
+  organization: any
+}>()
 
 const emit = defineEmits<{
-  refresh: [];
-}>();
+  refresh: []
+}>()
 
-const orgStore = useOrganizationStore();
-const toast = useToast();
-const modal = useModal();
+const orgStore = useOrganizationStore()
+const toast = useToast()
+const modal = useModal()
 
-const fileInput = ref<HTMLInputElement>();
-const galleryInput = ref<HTMLInputElement>();
+const fileInput = ref<HTMLInputElement>()
+const galleryInput = ref<HTMLInputElement>()
 
 const triggerFileInput = () => {
-  fileInput.value?.click();
-};
+  fileInput.value?.click()
+}
 
 const triggerGalleryInput = () => {
-  galleryInput.value?.click();
-};
+  galleryInput.value?.click()
+}
 
 const handleLogoUpload = async (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (!file) return;
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
 
   try {
-    await orgStore.uploadLogo(props.organization.id, file);
-    toast.success("Логотип обновлен");
-    emit("refresh");
+    await orgStore.uploadLogo(props.organization.id, file)
+    toast.success('Логотип обновлен')
+    emit('refresh')
   } catch (error) {
-    toast.error("Не удалось загрузить логотип");
+    toast.error('Не удалось загрузить логотип')
   }
-};
+}
 
 const handleGalleryUpload = async (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  const files = Array.from(target.files || []);
-  if (!files.length) return;
+  const target = e.target as HTMLInputElement
+  const files = Array.from(target.files || [])
+  if (!files.length) return
 
   try {
-    await orgStore.uploadGallery(props.organization.id, files);
-    toast.success(`Загружено ${files.length} изображений`);
-    emit("refresh");
+    await orgStore.uploadGallery(props.organization.id, files)
+    toast.success(`Загружено ${files.length} изображений`)
+    emit('refresh')
   } catch (error) {
-    toast.error("Не удалось загрузить изображения");
+    toast.error('Не удалось загрузить изображения')
   }
-};
+}
 
 const removeImage = async (imageUrl: string) => {
   const confirmed = await modal.confirm({
-    title: "Удаление изображения",
-    message: "Вы уверены, что хотите удалить это изображение из галереи?",
-    type: "warning",
-    confirmText: "Удалить",
-  });
+    title: 'Удаление изображения',
+    message: 'Вы уверены, что хотите удалить это изображение из галереи?',
+    type: 'warning',
+    confirmText: 'Удалить',
+  })
 
   if (confirmed) {
     try {
-      const filename = extractFilenameFromUrl(imageUrl);
-      await orgStore.removeFromGallery(props.organization.id, filename);
-      toast.success("Изображение удалено");
-      emit("refresh");
+      const filename = extractFilenameFromUrl(imageUrl)
+      await orgStore.removeFromGallery(props.organization.id, filename)
+      toast.success('Изображение удалено')
+      emit('refresh')
     } catch (error) {
-      toast.error("Не удалось удалить изображение");
+      toast.error('Не удалось удалить изображение')
     }
   }
-};
+}
 
 const deleteOrganization = async () => {
   const confirmed = await modal.confirm({
-    title: "Удаление организации",
+    title: 'Удаление организации',
     message: `Вы уверены, что хотите удалить организацию "${props.organization.name}"? Это действие нельзя отменить, все данные будут безвозвратно удалены.`,
-    type: "danger",
-    confirmText: "Удалить организацию",
-  });
+    type: 'danger',
+    confirmText: 'Удалить организацию',
+  })
 
   if (confirmed) {
     // Логика удаления
   }
-};
+}
 
 const extractFilenameFromUrl = (url: string): string => {
   try {
-    const urlObj = new URL(url);
-    return decodeURIComponent(urlObj.pathname.substring(1));
+    const urlObj = new URL(url)
+    return decodeURIComponent(urlObj.pathname.substring(1))
   } catch {
-    return url;
+    return url
   }
-};
+}
 </script>

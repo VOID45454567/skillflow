@@ -14,7 +14,7 @@
 
     <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
       <span
-        class="bg-gradient-to-r from-primary via-accent to-accent-pink bg-clip-text text-transparent"
+        class="bg-linear-to-r from-primary via-accent to-accent-pink bg-clip-text text-transparent"
       >
         Создавайте курсы
       </span>
@@ -35,17 +35,12 @@
         <PlusCircle class="w-5 h-5" />
         Создать курс
       </button>
-      <button
-        @click="$emit('start-learning')"
-        class="glass px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-surface-hover transition-all hover:-translate-y-0.5"
-      >
-        <PlayCircle class="w-5 h-5 text-primary" />
-        Начать обучение
-      </button>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { PlusCircle, PlayCircle } from "@lucide/vue";
+
+defineEmits<{ "create-course": [] }>();
 </script>

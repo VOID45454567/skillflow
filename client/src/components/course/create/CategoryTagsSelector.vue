@@ -1,100 +1,100 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import { Layers, Folder, Tag, CheckCircle } from "@lucide/vue";
-import BaseButton from "@/components/ui/AppButton.vue";
-import { useTermStore } from "@/stores/terms";
-import type { CourseTerm } from "@/types/course/course-term";
+import { ref, onMounted, watch } from 'vue'
+import { Layers, Folder, Tag, CheckCircle } from '@lucide/vue'
+import BaseButton from '@/components/ui/AppButton.vue'
+import { useTermStore } from '@/stores/terms'
+import type { CourseTerm } from '@/types/course/course-term'
+import { useAdminStore } from '@/stores/admin'
 
 const props = defineProps<{
-  selectedCategory: CourseTerm | null;
-  selectedTags: CourseTerm[];
-}>();
+  selectedCategory: CourseTerm | null
+  selectedTags: CourseTerm[]
+}>()
 
 const emit = defineEmits<{
-  "update:selectedCategory": [value: CourseTerm | null];
-  "update:selectedTags": [value: CourseTerm[]];
-  close: [];
-}>();
+  'update:selectedCategory': [value: CourseTerm | null]
+  'update:selectedTags': [value: CourseTerm[]]
+  close: []
+}>()
 
-const termStore = useTermStore();
+const termStore = useAdminStore()
 
-const tempCategory = ref<CourseTerm | null>(null);
-const tempTags = ref<CourseTerm[]>([]);
+const tempCategory = ref<CourseTerm | null>(null)
+const tempTags = ref<CourseTerm[]>([])
 
-// Инициализация при открытии
 const initSelections = () => {
-  console.log("🔵 Init selections:", {
+  console.log('🔵 Init selections:', {
     category: props.selectedCategory,
     tags: props.selectedTags,
-  });
-  tempCategory.value = props.selectedCategory ? { ...props.selectedCategory } : null;
-  tempTags.value = [...props.selectedTags];
-};
+  })
+  tempCategory.value = props.selectedCategory ? { ...props.selectedCategory } : null
+  tempTags.value = [...props.selectedTags]
+}
 
 // Загружаем данные при монтировании
 onMounted(async () => {
-  console.log("🟢 CategoryTagsSelector mounted");
-  initSelections();
+  console.log('🟢 CategoryTagsSelector mounted')
+  initSelections()
 
   if (termStore.categories.length === 0) {
-    console.log("📦 Loading categories...");
-    await termStore.getCategories();
-    console.log("✅ Categories loaded:", termStore.categories);
+    console.log('📦 Loading categories...')
+    await termStore.getCategories()
+    console.log('✅ Categories loaded:', termStore.categories)
   }
   if (termStore.tags.length === 0) {
-    console.log("📦 Loading tags...");
-    await termStore.getTags();
-    console.log("✅ Tags loaded:", termStore.tags);
+    console.log('📦 Loading tags...')
+    await termStore.getTags()
+    console.log('✅ Tags loaded:', termStore.tags)
   }
-});
+})
 
 // Следим за изменением props
 watch(
   () => props.selectedCategory,
   (newVal) => {
-    console.log("🔄 selectedCategory changed:", newVal);
+    console.log('🔄 selectedCategory changed:', newVal)
     if (!newVal) {
-      tempCategory.value = null;
+      tempCategory.value = null
     }
   },
-  { deep: true }
-);
+  { deep: true },
+)
 
 const selectCategory = (category: CourseTerm) => {
-  console.log("🟡 Category clicked:", category);
-  tempCategory.value = { ...category };
-  console.log("✅ Category selected:", tempCategory.value);
-};
+  console.log('🟡 Category clicked:', category)
+  tempCategory.value = { ...category }
+  console.log('✅ Category selected:', tempCategory.value)
+}
 
 const toggleTag = (tag: CourseTerm) => {
-  console.log("🟡 Tag clicked:", tag);
-  const index = tempTags.value.findIndex((t) => t.id === tag.id);
-  console.log("Tag index:", index);
+  console.log('🟡 Tag clicked:', tag)
+  const index = tempTags.value.findIndex((t) => t.id === tag.id)
+  console.log('Tag index:', index)
 
   if (index > -1) {
-    tempTags.value.splice(index, 1);
-    console.log("❌ Tag removed");
+    tempTags.value.splice(index, 1)
+    console.log('❌ Tag removed')
   } else {
-    tempTags.value.push({ ...tag });
-    console.log("✅ Tag added");
+    tempTags.value.push({ ...tag })
+    console.log('✅ Tag added')
   }
-  console.log("Current tags:", tempTags.value);
-};
+  console.log('Current tags:', tempTags.value)
+}
 
 const isTagSelected = (tagId: number) => {
-  const selected = tempTags.value.some((t) => t.id === tagId);
-  return selected;
-};
+  const selected = tempTags.value.some((t) => t.id === tagId)
+  return selected
+}
 
 const saveSelection = () => {
-  console.log("💾 Saving selection:", {
+  console.log('💾 Saving selection:', {
     category: tempCategory.value,
     tags: tempTags.value,
-  });
-  emit("update:selectedCategory", tempCategory.value ? { ...tempCategory.value } : null);
-  emit("update:selectedTags", [...tempTags.value]);
-  emit("close");
-};
+  })
+  emit('update:selectedCategory', tempCategory.value ? { ...tempCategory.value } : null)
+  emit('update:selectedTags', [...tempTags.value])
+  emit('close')
+}
 </script>
 
 <template>
@@ -112,14 +112,6 @@ const saveSelection = () => {
     </div>
 
     <!-- Debug Info -->
-    <div class="p-2 bg-gray-100 rounded text-xs">
-      <p>
-        Debug: Categories: {{ termStore.categories.length }}, Tags:
-        {{ termStore.tags.length }}
-      </p>
-      <p>Selected Category: {{ tempCategory?.name || "none" }}</p>
-      <p>Selected Tags: {{ tempTags.map((t) => t.name).join(", ") || "none" }}</p>
-    </div>
 
     <!-- Categories -->
     <div class="space-y-3">
@@ -146,10 +138,7 @@ const saveSelection = () => {
           </div>
         </button>
       </div>
-      <p
-        v-if="termStore.categories.length === 0"
-        class="text-sm text-gray-400 text-center py-4"
-      >
+      <p v-if="termStore.categories.length === 0" class="text-sm text-gray-400 text-center py-4">
         Нет доступных категорий
       </p>
     </div>
@@ -177,10 +166,7 @@ const saveSelection = () => {
           <CheckCircle v-if="isTagSelected(tag.id)" class="w-3 h-3 inline ml-1" />
         </button>
       </div>
-      <p
-        v-if="termStore.tags.length === 0"
-        class="text-sm text-gray-400 text-center py-4"
-      >
+      <p v-if="termStore.tags.length === 0" class="text-sm text-gray-400 text-center py-4">
         Нет доступных тегов
       </p>
     </div>
@@ -192,24 +178,20 @@ const saveSelection = () => {
         <p class="text-sm text-gray-600">
           <span class="font-medium">Категория:</span>
           <span :class="tempCategory ? 'text-primary' : 'text-gray-400'">
-            {{ tempCategory?.name || "не выбрана" }}
+            {{ tempCategory?.name || 'не выбрана' }}
           </span>
         </p>
         <p class="text-sm text-gray-600">
           <span class="font-medium">Теги ({{ tempTags.length }}):</span>
           <span :class="tempTags.length > 0 ? 'text-accent-cyan' : 'text-gray-400'">
-            {{
-              tempTags.length > 0 ? tempTags.map((t) => t.name).join(", ") : "не выбраны"
-            }}
+            {{ tempTags.length > 0 ? tempTags.map((t) => t.name).join(', ') : 'не выбраны' }}
           </span>
         </p>
       </div>
     </div>
 
     <div class="flex gap-3 pt-4">
-      <BaseButton variant="outlined" class="flex-1" @click="emit('close')">
-        Отмена
-      </BaseButton>
+      <BaseButton variant="outlined" class="flex-1" @click="emit('close')"> Отмена </BaseButton>
       <BaseButton class="flex-1" @click="saveSelection" :disabled="!tempCategory">
         Применить
       </BaseButton>

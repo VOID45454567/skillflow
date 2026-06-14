@@ -9,7 +9,7 @@
         </div>
         <div>
           <h3 class="text-lg font-bold text-gray-800">
-            {{ isEditing ? "Редактирование урока" : "Новый урок" }}
+            {{ isEditing ? 'Редактирование урока' : 'Новый урок' }}
           </h3>
           <p class="text-sm text-gray-500">Добавьте контент к вашему уроку</p>
         </div>
@@ -24,8 +24,8 @@
           placeholder="Введение в тему"
         />
         <BaseInput
-          :model-value="String(localLesson.requredTimeInMinutes || 15)"
-          @update:model-value="localLesson.requredTimeInMinutes = Number($event)"
+          :model-value="String(localLesson.requredTime || 15)"
+          @update:model-value="localLesson.requredTime = Number($event)"
           type="number"
           label="Время на прохождение (мин)"
           placeholder="15"
@@ -56,10 +56,7 @@
             class="inline-flex items-center gap-1 px-3 py-1 bg-accent-cyan/10 text-accent-cyan text-sm rounded-full"
           >
             {{ goal }}
-            <button
-              @click="localLesson.goals.splice(i, 1)"
-              class="hover:text-accent-cyan"
-            >
+            <button @click="localLesson.goals.splice(i, 1)" class="hover:text-accent-cyan">
               <X class="w-3 h-3" />
             </button>
           </span>
@@ -72,14 +69,8 @@
       <!-- Content Builder -->
       <div class="space-y-4 max-h-96 overflow-y-auto">
         <TextBlockBuilder v-if="activeContentType === 'text'" @add="addContentBlock" />
-        <MediaBlockBuilder
-          v-else-if="activeContentType === 'media'"
-          @add="addContentBlock"
-        />
-        <CodeBlockBuilder
-          v-else-if="activeContentType === 'code'"
-          @add="addContentBlock"
-        />
+        <MediaBlockBuilder v-else-if="activeContentType === 'media'" @add="addContentBlock" />
+        <CodeBlockBuilder v-else-if="activeContentType === 'code'" @add="addContentBlock" />
       </div>
 
       <!-- Content Blocks List -->
@@ -87,7 +78,7 @@
 
       <div class="flex gap-3 pt-4">
         <BaseButton @click="saveLesson" class="flex-1">
-          {{ isEditing ? "Сохранить урок" : "Добавить урок" }}
+          {{ isEditing ? 'Сохранить урок' : 'Добавить урок' }}
         </BaseButton>
       </div>
     </div>
@@ -95,100 +86,100 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed } from "vue";
-import { Layers, Target, X } from "@lucide/vue";
-import Modal from "@/components/common/Modal.vue";
-import BaseButton from "@/components/ui/AppButton.vue";
-import BaseInput from "@/components/ui/AppInput.vue";
-import ContentTypeSelector from "./ContentTypeSelector.vue";
-import TextBlockBuilder from "./TextBlockBuilder.vue";
-import MediaBlockBuilder from "./MediaBlockBuilder.vue";
-import CodeBlockBuilder from "./CodeBlockBuilder.vue";
-import ContentBlocksList from "./ContentBlocksList.vue";
-import type { ContentSection, Lesson, LessonContent } from "@/types/course/Lesson";
+import { ref, reactive, watch, computed } from 'vue'
+import { Layers, Target, X } from '@lucide/vue'
+import Modal from '@/components/common/Modal.vue'
+import BaseButton from '@/components/ui/AppButton.vue'
+import BaseInput from '@/components/ui/AppInput.vue'
+import ContentTypeSelector from './ContentTypeSelector.vue'
+import TextBlockBuilder from './TextBlockBuilder.vue'
+import MediaBlockBuilder from './MediaBlockBuilder.vue'
+import CodeBlockBuilder from './CodeBlockBuilder.vue'
+import ContentBlocksList from './ContentBlocksList.vue'
+import type { ContentSection, Lesson, LessonContent } from '@/types/course/Lesson'
 
-type ContentType = "text" | "media" | "code";
+type ContentType = 'text' | 'media' | 'code'
 
-interface LessonWithContent extends Partial<Omit<Lesson, "content">> {
-  content: LessonContent;
+interface LessonWithContent extends Partial<Omit<Lesson, 'content'>> {
+  content: LessonContent
 }
 
 const props = defineProps<{
-  modelValue: boolean;
-  lesson: LessonWithContent;
-  isEditing: boolean;
-}>();
+  modelValue: boolean
+  lesson: LessonWithContent
+  isEditing: boolean
+}>()
 
 const emit = defineEmits<{
-  "update:modelValue": [value: boolean];
-  save: [lesson: LessonWithContent];
-  close: [];
-}>();
+  'update:modelValue': [value: boolean]
+  save: [lesson: LessonWithContent]
+  close: []
+}>()
 
 const localLesson = reactive<LessonWithContent>({
-  title: "",
-  requredTimeInMinutes: 15,
+  title: '',
+  requredTime: 15,
   goals: [],
   content: { sections: [] },
-});
+})
 
-const goalInput = ref("");
-const activeContentType = ref<ContentType>("text");
-const contentBlocks = ref<ContentSection[]>([]);
+const goalInput = ref('')
+const activeContentType = ref<ContentType>('text')
+const contentBlocks = ref<ContentSection[]>([])
 
 const contentTypeStatus = computed(() => ({
-  text: contentBlocks.value.some((b) => b.type === "text"),
-  media: contentBlocks.value.some((b) => b.type === "media"),
-  code: contentBlocks.value.some((b) => b.type === "code"),
-}));
+  text: contentBlocks.value.some((b) => b.type === 'text'),
+  media: contentBlocks.value.some((b) => b.type === 'media'),
+  code: contentBlocks.value.some((b) => b.type === 'code'),
+}))
 
 const addGoal = () => {
-  const trimmed = goalInput.value.trim();
+  const trimmed = goalInput.value.trim()
   if (trimmed && !localLesson.goals?.includes(trimmed)) {
-    localLesson.goals = [...(localLesson.goals || []), trimmed];
-    goalInput.value = "";
+    localLesson.goals = [...(localLesson.goals || []), trimmed]
+    goalInput.value = ''
   }
-};
+}
 
 const addContentBlock = (block: ContentSection) => {
   contentBlocks.value.push({
     ...block,
     id: `${block.type}-${Date.now()}`,
-  });
-};
+  })
+}
 
 const removeBlock = (index: number) => {
-  contentBlocks.value.splice(index, 1);
-};
+  contentBlocks.value.splice(index, 1)
+}
 
 const saveLesson = () => {
   const lessonData: LessonWithContent = {
     ...localLesson,
     content: { sections: [...contentBlocks.value] },
-  };
-  emit("save", lessonData);
-  emit("close");
-};
+  }
+  emit('save', lessonData)
+  emit('close')
+}
 
 watch(
   () => props.lesson,
   (newLesson) => {
     if (newLesson) {
-      localLesson.title = newLesson.title || "";
-      localLesson.requredTimeInMinutes = newLesson.requredTimeInMinutes || 15;
-      localLesson.goals = [...(newLesson.goals || [])];
-      contentBlocks.value = [...(newLesson.content?.sections || [])];
+      localLesson.title = newLesson.title || ''
+      localLesson.requredTime = newLesson.requredTime || 15
+      localLesson.goals = [...(newLesson.goals || [])]
+      contentBlocks.value = [...(newLesson.content?.sections || [])]
     }
   },
-  { immediate: true, deep: true }
-);
+  { immediate: true, deep: true },
+)
 
 watch(
   () => props.modelValue,
   (val) => {
     if (!val) {
-      activeContentType.value = "text";
+      activeContentType.value = 'text'
     }
-  }
-);
+  },
+)
 </script>

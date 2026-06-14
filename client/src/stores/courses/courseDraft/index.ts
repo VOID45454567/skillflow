@@ -6,7 +6,7 @@ import { ref, watch } from 'vue'
 interface DraftLesson {
     tempId?: number
     title: string
-    requredTimeInMinutes: number
+    requredTime: number
     goals: string[]
     content: LessonContent
     order?: number

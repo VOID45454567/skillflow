@@ -1,15 +1,16 @@
 // stores/admin.ts
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { API } from "@/api";
 import type { User } from "@/types/user";
 import type { Transaction } from "@/types/transaction";
 import type { Payment } from "@/types/payment";
-import type { CourseTerm } from "@/types/course/course-term";
+import type { CourseTerm, Term } from "@/types/course/course-term";
 import type { AdminAction } from "@/types/adminAction";
 import type { UserVerificationStatuses } from "@/types/enums/verification-statuses";
 import type { Appeal } from "@/types/appeal";
 import type { AdminActionTypes } from "@/types/enums/admin-action-types";
+import { TermType } from "@/types/enums/common-info";
 
 export const useAdminStore = defineStore("admin", () => {
     // State
@@ -202,8 +203,67 @@ export const useAdminStore = defineStore("admin", () => {
         }
     }
 
-    function clearError() {
+    const clearError = () => {
         error.value = null;
+    }
+
+    const createTerm = async (type: Term, name: string) => {
+        const res = await API.admin.createTerm({ name, type })
+
+        // Добавляем в правильный массив для мгновенной реактивности
+        if (res.type === TermType.CATEGORY) {
+            categories.value.push(res)
+        } else {
+            tags.value.push(res)
+        }
+
+        return res
+    }
+
+    const updateTerm = async (newName: string, id: number) => {
+        const res = await API.admin.updateTerm({ name: newName }, id)
+
+        // Обновляем в обоих массивах
+        const updateInArray = (arr: CourseTerm[]) => {
+            const index = arr.findIndex(t => t.id === id)
+            if (index !== -1) {
+                arr[index] = { ...arr[index], name: newName }
+            }
+        }
+        updateInArray(categories.value)
+        updateInArray(tags.value)
+
+        return res
+    }
+
+    const deleteTerm = async (id: number) => {
+        await API.admin.deleteTerm(id)
+
+        categories.value = categories.value.filter((term) => term.id !== id)
+        tags.value = tags.value.filter((term) => term.id !== id)
+    }
+
+    const categories = ref<CourseTerm[]>([])
+    const tags = ref<CourseTerm[]>([])
+    const allTerms = ref<CourseTerm[]>([])
+
+    watch(
+        [categories, tags],
+        ([newCategories, newTags]) => {
+            allTerms.value = [...newTags, ...newCategories]
+        },
+        { immediate: true, deep: true }
+    )
+
+    const getCategories = async () => {
+        categories.value = await API.terms.getCategories() || []
+
+    }
+
+    const getTags = async () => {
+        tags.value = await API.terms.getTags() || []
+        console.log(tags.value);
+
     }
 
     return {
@@ -216,7 +276,11 @@ export const useAdminStore = defineStore("admin", () => {
         logs,
         loading,
         error, appeals,
-
+        categories,
+        tags,
+        allTerms,
+        getTags,
+        getCategories,
 
         // Getters
         blockedUsers,
@@ -240,5 +304,8 @@ export const useAdminStore = defineStore("admin", () => {
         clearError,
         fetchAppeals,
         getAppealDetails,
+        createTerm,
+        updateTerm,
+        deleteTerm
     };
 });

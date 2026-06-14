@@ -4,10 +4,11 @@ import { ENDPOINTS } from "../endpoints";
 import type { User } from "@/types/user";
 import type { Transaction } from "@/types/transaction";
 import type { Payment } from "@/types/payment";
-import type { CourseTerm } from "@/types/course/course-term";
+import type { CourseTerm, Term } from "@/types/course/course-term";
 import type { AdminAction } from "@/types/adminAction";
 import type { Appeal } from "@/types/appeal";
 import type { AdminActionTypes } from "@/types/enums/admin-action-types";
+import type { CreateTermDto } from "@/types/enums/common-info";
 
 export interface SetVerificationStatusDto {
     status: UserVerificationStatuses;
@@ -95,5 +96,19 @@ export class AdminApi {
     async getAppealByUserId(userId: number): Promise<Appeal> {
         const request = await this.axios.get(ENDPOINTS.admin.getAppealByUserId(userId));
         return request.data;
+    }
+    async createTerm(dto: CreateTermDto) {
+        const request = await this.axios.post(ENDPOINTS.admin.createTerm, dto)
+        return request.data as CourseTerm
+    }
+
+    async updateTerm(dto: Pick<CreateTermDto, 'name'>, id: number) {
+        const request = await this.axios.patch(ENDPOINTS.admin.deleteTerm(id), dto)
+        return request
+    }
+
+    async deleteTerm(id: number) {
+        const request = await this.axios.delete(ENDPOINTS.admin.deleteTerm(id))
+        return request
     }
 }

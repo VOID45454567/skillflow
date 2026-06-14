@@ -111,7 +111,6 @@
         </div>
       </div>
 
-      <!-- Price -->
       <div class="space-y-2">
         <label class="text-sm font-medium text-gray-600 flex items-center gap-2">
           <Wallet class="w-4 h-4 text-emerald-500" />
@@ -141,7 +140,6 @@
             min="0"
             class="input-styled w-32 px-3 py-2 rounded-xl bg-white/60 border border-gray-200/60 text-gray-700 text-sm focus:outline-none focus:border-primary"
           />
-          <span v-if="!isFree" class="text-sm text-gray-500">💎</span>
         </div>
       </div>
     </div>

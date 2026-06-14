@@ -15,9 +15,6 @@ export const getMailerConfig = (config: ConfigService): MailerOptions => {
         },
         defaults: {
             from: 'skillflow test'
-        },
-        template: {
-
         }
     }
 }

@@ -1,43 +1,43 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Plus } from "@lucide/vue";
-import BaseButton from "@/components/ui/AppButton.vue";
-import BaseInput from "@/components/ui/AppInput.vue";
-import type { CodeSection } from "@/types/course/Lesson";
+import { ref } from 'vue'
+import { Plus } from '@lucide/vue'
+import BaseButton from '@/components/ui/AppButton.vue'
+import BaseInput from '@/components/ui/AppInput.vue'
+import type { CodeSection } from '@/types/course/Lesson'
 
 const emit = defineEmits<{
-  add: [block: CodeSection];
-}>();
+  add: [block: CodeSection]
+}>()
 
 const block = ref<CodeSection>({
-  type: "code",
-  id: "",
-  language: "javascript",
-  code: "",
-  description: "",
+  type: 'code',
+  id: '',
+  language: 'javascript',
+  code: '',
+  description: '',
   executable: true,
   editable: true,
-});
+})
 
 const addBlock = () => {
   if (block.value.code) {
-    console.log("💾 Adding code block:", block.value);
-    emit("add", {
+    console.log('💾 Adding code block:', block.value)
+    emit('add', {
       ...block.value,
       id: `code-${Date.now()}`,
-    });
+    })
     // Сброс формы
     block.value = {
-      type: "code",
-      id: "",
-      language: "javascript",
-      code: "",
-      description: "",
+      type: 'code',
+      id: '',
+      language: 'javascript',
+      code: '',
+      description: '',
       executable: true,
       editable: true,
-    };
+    }
   }
-};
+}
 </script>
 
 <template>
@@ -65,21 +65,6 @@ const addBlock = () => {
       label="Описание кода"
       placeholder="Что делает этот код"
     />
-
-    <div class="flex items-center gap-4">
-      <label class="flex items-center gap-2">
-        <input
-          type="checkbox"
-          v-model="block.executable"
-          class="rounded border-gray-300"
-        />
-        <span class="text-sm text-gray-600">Можно запустить</span>
-      </label>
-      <label class="flex items-center gap-2">
-        <input type="checkbox" v-model="block.editable" class="rounded border-gray-300" />
-        <span class="text-sm text-gray-600">Можно редактировать</span>
-      </label>
-    </div>
 
     <BaseButton @click="addBlock" size="sm" class="w-full" :disabled="!block.code">
       <Plus class="w-4 h-4 mr-1" />

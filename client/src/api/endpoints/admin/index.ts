@@ -13,4 +13,6 @@ export const adminEndpoints = {
     getAppeals: "/admin/appeals",
     getAppeal: (id: number) => `/admin/appeals/${id}`,
     getAppealByUserId: (userId: number) => `/admin/appeals/user/${userId}`,
+    createTerm: '/terms',
+    deleteTerm: (id: number) => `/terms/${id}`
 }

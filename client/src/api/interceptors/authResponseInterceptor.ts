@@ -1,4 +1,4 @@
-import type { AxiosError, AxiosInstance } from "axios";
+import type { AxiosError, AxiosInstance, AxiosInterceptorManager } from "axios";
 import { API } from "..";
 
 export const authResponceIntrceptor = async (error: AxiosError, axiosApp: AxiosInstance): Promise<any> => {

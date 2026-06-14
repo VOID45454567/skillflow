@@ -1,5 +1,5 @@
 <template>
-  <AppModal :model-value="modelValue" title="Возврат курса" width="md" @close="close">
+  <Modal :model-value="modelValue" title="Возврат курса" width="md" @close="close">
     <div class="space-y-5">
       <!-- Warning Icon -->
       <div class="flex justify-center">
@@ -119,15 +119,14 @@
         </AppButton>
       </div>
     </div>
-  </AppModal>
+  </Modal>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { RotateCcw, AlertCircle, Loader } from "@lucide/vue";
-import AppModal from "@/components/common/Modal.vue";
 import AppButton from "@/components/ui/AppButton.vue";
-
+import Modal from "../common/Modal.vue";
 const props = defineProps<{
   modelValue: boolean;
   courseTitle?: string;

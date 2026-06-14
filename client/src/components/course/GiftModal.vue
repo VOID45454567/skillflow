@@ -1,5 +1,5 @@
 <template>
-  <AppModal
+  <Modal
     :model-value="modelValue"
     title="Подарить курс"
     description="Выберите пользователя, которому хотите подарить курс"
@@ -98,14 +98,14 @@
         </AppButton>
       </div>
     </div>
-  </AppModal>
+  </Modal>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { Search, Gift, User, CheckCircle, Loader } from "@lucide/vue";
-import AppModal from "@/components/common/Modal.vue";
 import AppButton from "@/components/ui/AppButton.vue";
+import Modal from "@/components/common/Modal.vue";
 
 const props = defineProps<{
   modelValue: boolean;

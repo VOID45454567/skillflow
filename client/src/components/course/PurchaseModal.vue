@@ -1,5 +1,5 @@
 <template>
-  <AppModal :model-value="modelValue" title="Покупка курса" width="md" @close="close">
+  <Modal :model-value="modelValue" title="Покупка курса" width="md" @close="close">
     <div class="space-y-5">
       <!-- Course Info -->
       <div class="glass rounded-xl p-4 bg-linear-to-br from-primary/5 to-accent/5">
@@ -90,7 +90,7 @@
 
       <!-- Alternative Payment -->
     </div>
-  </AppModal>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -104,9 +104,9 @@ import {
   Loader,
   PlayCircle,
 } from "@lucide/vue";
-import AppModal from "@/components/common/Modal.vue";
 import AppButton from "@/components/ui/AppButton.vue";
 import { useToast } from "@/composables/useToast";
+import Modal from "@/components/common/Modal.vue";
 const toast = useToast();
 const props = defineProps<{
   modelValue: boolean;

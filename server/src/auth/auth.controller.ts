@@ -42,12 +42,7 @@ export class AuthController {
     return {
       success: true,
       message: 'Регистрация успешна',
-      user: {
-        id: result.id,
-        email: result.email,
-        login: result.login,
-        role: result.role,
-      },
+      user: result,
     };
   }
 
@@ -137,6 +132,8 @@ export class AuthController {
     };
   }
 
+
+
   @Delete('2fa/disable')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
@@ -177,17 +174,27 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   async refreshTokens(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken = req.cookies.refreshToken;
+    console.log('=== REFRESH CONTROLLER ===');
+    console.log('All cookies:', req.cookies);
 
+    let refreshToken = req.cookies.refreshToken;
+
+    if (Array.isArray(refreshToken)) {
+      console.log('⚠️ Multiple refresh tokens found, taking the last one');
+      refreshToken = refreshToken[refreshToken.length - 1];
+    }
+
+    console.log('Using refresh token:', refreshToken?.substring(0, 50) + '...');
 
     if (!refreshToken) {
+      console.log('❌ No refresh token in cookies');
       throw new UnauthorizedException('Refresh token not found');
     }
 
-    await this.authService.refreshTokens(refreshToken, res);
-
-    console.log('токены обновленны');
+    const result = await this.authService.refreshTokens(refreshToken, res);
 
     return {
       success: true,

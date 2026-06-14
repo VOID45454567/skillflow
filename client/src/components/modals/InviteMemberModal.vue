@@ -26,9 +26,15 @@
         />
       </div>
 
+      <!-- Состояние загрузки -->
+      <div v-if="loading" class="text-center py-8">
+        <Loader2 class="h-8 w-8 text-primary animate-spin mx-auto mb-2" />
+        <p class="text-gray-500">Загрузка пользователей...</p>
+      </div>
+
       <!-- Результаты поиска (выпадающий список) -->
       <div
-        v-if="filteredUsers.length && searchQuery.length >= 2"
+        v-else-if="filteredUsers.length && searchQuery.length >= 2"
         class="max-h-80 overflow-y-auto space-y-2"
       >
         <div
@@ -40,26 +46,28 @@
             <img
               :src="user.avatarUrl || '/placeholder-avatar.png'"
               class="h-12 w-12 rounded-full object-cover"
+              :alt="user.login"
             />
             <div>
               <span class="font-medium text-gray-800">{{ user.login }}</span>
               <p class="text-sm text-gray-500">{{ user.email }}</p>
             </div>
           </div>
-          <AppButton :disabled="invitingUserId === user.id" @click="inviteUser(user)">
-            <Loader2
-              v-if="invitingUserId === user.id"
-              class="h-4 w-4 mr-2 animate-spin"
-            />
+          <AppButton
+            :disabled="invitingUserId === user.id"
+            @click="inviteUser(user)"
+            variant="filled"
+          >
+            <Loader2 v-if="invitingUserId === user.id" class="h-4 w-4 mr-2 animate-spin" />
             <Mail v-else class="h-4 w-4 mr-2" />
-            {{ invitingUserId === user.id ? "Отправка..." : "Пригласить" }}
+            {{ invitingUserId === user.id ? 'Отправка...' : 'Пригласить' }}
           </AppButton>
         </div>
       </div>
 
       <!-- Нет результатов -->
       <div
-        v-else-if="searchQuery.length >= 2 && !filteredUsers.length"
+        v-else-if="searchQuery.length >= 2 && !filteredUsers.length && !loading"
         class="text-center py-8"
       >
         <Search class="h-10 w-10 text-gray-300 mx-auto mb-2" />
@@ -67,7 +75,7 @@
       </div>
 
       <!-- Пустое состояние -->
-      <div v-else-if="searchQuery.length < 2" class="text-center py-8">
+      <div v-else-if="searchQuery.length < 2 && !loading" class="text-center py-8">
         <Search class="h-12 w-12 text-gray-300 mx-auto mb-3" />
         <p class="text-gray-500">Введите минимум 2 символа для поиска</p>
       </div>
@@ -77,12 +85,10 @@
         <div class="flex items-start gap-3">
           <Info class="h-5 w-5 text-accent-cyan shrink-0 mt-0.5" />
           <div>
-            <p class="text-sm font-medium text-gray-800 mb-1">
-              Как работает приглашение?
-            </p>
+            <p class="text-sm font-medium text-gray-800 mb-1">Как работает приглашение?</p>
             <p class="text-xs text-gray-600">
-              После отправки приглашения, пользователь получит уведомление с кодом для
-              вступления в организацию. Код также будет доступен в его профиле.
+              После отправки приглашения, пользователь получит уведомление с кодом для вступления в
+              организацию. Код также будет доступен в его профиле.
             </p>
           </div>
         </div>
@@ -92,105 +98,130 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import { Search, UserPlus, Mail, Info, Loader2 } from "@lucide/vue";
-import Modal from "@/components/common/Modal.vue";
-import AppButton from "../ui/AppButton.vue";
-import { useAuthStore } from "@/stores/auth";
-import { useToast } from "@/composables/useToast";
-import { useOrganizationStore } from "@/stores/organization";
-import { useAdminStore } from "@/stores/admin";
-import type { User } from "@/types/user";
+import { computed, onMounted, ref, watch } from 'vue'
+import { Search, UserPlus, Mail, Info, Loader2 } from '@lucide/vue'
+import Modal from '@/components/common/Modal.vue'
+import AppButton from '@/components/ui/AppButton.vue'
+import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
+import { useOrganizationStore } from '@/stores/organization'
+import { useUserStore } from '@/stores/user'
+import type { User } from '@/types/user'
 
 const props = defineProps<{
-  modelValue: boolean;
-  organizationId: number;
-  ownerEmail: string;
-}>();
+  modelValue: boolean
+  organizationId: number
+}>()
 
 const emit = defineEmits<{
-  "update:modelValue": [value: boolean];
-  invited: [];
-}>();
+  'update:modelValue': [value: boolean]
+  invited: []
+}>()
 
-const orgStore = useOrganizationStore();
-const authStore = useAuthStore();
-const toast = useToast();
-const adminStore = useAdminStore();
+const orgStore = useOrganizationStore()
+const authStore = useAuthStore()
+const userStore = useUserStore()
+const toast = useToast()
 
-const searchQuery = ref("");
-const invitingUserId = ref<number | null>(null);
-const usersLoaded = ref(false);
+const searchQuery = ref('')
+const invitingUserId = ref<number | null>(null)
+const loading = ref(false)
 
+// Загружаем пользователей при монтировании
 onMounted(async () => {
-  if (
-    !adminStore.users ||
-    !Array.isArray(adminStore.users) ||
-    adminStore.users.length === 0
-  ) {
-    await adminStore.getAllUsers();
+  await loadUsers()
+})
+
+// Загружаем пользователей при открытии модалки (на случай если данные устарели)
+watch(
+  () => props.modelValue,
+  async (val) => {
+    if (val) {
+      await loadUsers()
+    } else {
+      resetForm()
+    }
+  },
+)
+
+const loadUsers = async () => {
+  // Загружаем только если пользователи еще не загружены
+  if (!userStore.users || userStore.users.length === 0) {
+    loading.value = true
+    try {
+      const result = await userStore.getAll()
+      // Если API возвращает массив, сохраняем его
+      if (Array.isArray(result)) {
+        userStore.users = result
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки пользователей:', error)
+      toast.error('Не удалось загрузить список пользователей')
+    } finally {
+      loading.value = false
+    }
   }
-  usersLoaded.value = true;
-});
+}
 
 const filteredUsers = computed(() => {
-  // Проверяем, что users существует и является массивом
-  if (
-    !adminStore.users ||
-    !Array.isArray(adminStore.users) ||
-    searchQuery.value.length < 2
-  ) {
-    return [];
+  if (!userStore.users || !Array.isArray(userStore.users) || searchQuery.value.length < 2) {
+    return []
   }
 
-  const query = searchQuery.value.toLowerCase();
+  const query = searchQuery.value.toLowerCase()
 
-  return adminStore.users
+  return userStore.users
     .filter((user: User) => {
       // Исключаем текущего пользователя
       if (user.id === authStore.currentUser?.id) {
-        return false;
+        return false
       }
 
-      // Фильтруем по логину
-      return user.login.toLowerCase().includes(query);
+      // Фильтруем по логину (или email, если нужно)
+      return user.login.toLowerCase().includes(query) || user.email.toLowerCase().includes(query)
     })
-    .slice(0, 10); // Ограничиваем количество результатов
-});
-
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (!val) {
-      resetForm();
-    }
-  }
-);
+    .slice(0, 10) // Ограничиваем результаты
+})
 
 const resetForm = () => {
-  searchQuery.value = "";
-  invitingUserId.value = null;
-};
+  searchQuery.value = ''
+  invitingUserId.value = null
+}
 
 const inviteUser = async (user: User) => {
-  invitingUserId.value = user.id;
+  invitingUserId.value = user.id
   try {
-    await orgStore.sendInviteCode(user.id, props.organizationId);
-    toast.success(`Приглашение отправлено пользователю ${user.login}`);
-    emit("invited");
-    close();
+    await orgStore.sendInviteCode(user.id, props.organizationId)
+    toast.success(`Приглашение отправлено пользователю ${user.login}`)
+    emit('invited')
+    close()
   } catch (error: any) {
     if (error?.response?.status === 409) {
-      toast.error("Пользователь уже состоит в организации или уже приглашен");
+      toast.error('Пользователь уже состоит в организации или уже приглашен')
     } else {
-      toast.error("Не удалось отправить приглашение");
+      toast.error('Не удалось отправить приглашение')
     }
   } finally {
-    invitingUserId.value = null;
+    invitingUserId.value = null
   }
-};
+}
 
 const close = () => {
-  emit("update:modelValue", false);
-};
+  emit('update:modelValue', false)
+}
 </script>
+
+<style scoped>
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

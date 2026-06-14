@@ -1,10 +1,6 @@
 <template>
   <div class="space-y-4">
-    <div
-      v-for="section in content?.sections || []"
-      :key="section.id"
-      class="glass rounded-xl p-5"
-    >
+    <div v-for="section in content?.sections || []" :key="section.id" class="glass rounded-xl p-5">
       <!-- Text Block -->
       <div v-if="section.type === 'text'" class="space-y-3">
         <div class="flex items-center gap-2 text-primary">
@@ -48,14 +44,6 @@
         <div class="flex items-center gap-2 text-primary">
           <Code class="w-4 h-4" />
           <span class="text-xs font-medium">Код · {{ section.language }}</span>
-          <div class="ml-auto flex gap-1">
-            <span v-if="section.executable" class="text-xs text-emerald-500"
-              >▶ запускаемый</span
-            >
-            <span v-if="section.editable" class="text-xs text-accent-cyan"
-              >✎ редактируемый</span
-            >
-          </div>
         </div>
         <pre
           class="bg-gray-900 rounded-xl p-4 overflow-x-auto"
@@ -94,10 +82,10 @@
 </template>
 
 <script setup lang="ts">
-import type { LessonContent } from "@/types/course/Lesson";
-import { FileText, Image, Code } from "@lucide/vue";
+import type { LessonContent } from '@/types/course/Lesson'
+import { FileText, Image, Code } from '@lucide/vue'
 
 defineProps<{
-  content: LessonContent;
-}>();
+  content: LessonContent
+}>()
 </script>
